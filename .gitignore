@@ -1,0 +1,3 @@
+# Ignore my local big source csv dir
+/data-full/
+/temp/
