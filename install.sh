@@ -6,11 +6,19 @@ db_tns_datamart_pdb="192.168.0.51:1521/datamart"
 dba_name="sys"
 dev_name="c##jsmith"
 
-read -p 'Demo mode: Load a small number of records? (y/n): ' demo_mode
 read -s -p 'Enter dba password : ' dba_pass
 echo ' '
 read -s -p 'Enter dev password : ' dev_pass
 
+echo ""
+echo "======================================"
+echo " Data loading mode"
+echo "======================================"
+echo "1. Test mode (small dataset for testing)"
+echo "2. Full data online (download and load entire CSV from public website)"
+echo "3. Full data offline (manually load CSV from /data-full/)"
+echo ""
+read -p 'Select 1, 2, or 3...: ' load_mode
 
 check_success() {
     if [ $? -ne 0 ]; then
@@ -63,10 +71,10 @@ echo " Loading Data"
 echo "======================================"
 # Execute SQL*Loader for 2019-2022
 
-if [ "$demo_mode" = "y" ]; then
-    echo "Use demo dataset."
+if [ "$load_mode" == "1" ]; then
+    echo "Use small demo dataset."
     sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/demo_nfz_hospitalizations_2019-2022.ctl log=log/demo_nfz_hospitalizations_2019-2022.log
-else
+elif [ "$load_mode" == "2" ]; then
     echo "Downloading full csv (>1GB)..."
     pwd
     # 2019-2021
@@ -81,6 +89,9 @@ else
     mv hospitalizacje.csv nfz_hospitalizations_2022.csv
     # Load data
     cd ..
+    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log
+elif [ "$load_mode" == "3" ]; then
+    pwd
     sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log
 fi
 echo "Data Load Completed"
