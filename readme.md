@@ -47,14 +47,18 @@ To simplify and denormalize these dictionaries, I've opted for an "inline" appro
 The dictionary source for Polish HL7 implementations includes:
 - discharge modes https://www.cez.gov.pl/HL7POL-1.3.2/plcda-html-1.3.2/plcda-html/voc-2.16.840.1.113883.3.4424.13.11.36-2015-10-26T000000.html
 
-## Install
+## Installation
+Data Part:
 
-Data part:
-- you need oracle database
-- copy repo
-- check variables in install.sh and sql/ directory scripts
-- run install.sh (on start script can ask for db passwords for few security reason)
+- Set up the Oracle database.
+- Copy the repository.
+- Review server parameters (TNS, IP, service name) in the sql/ directory scripts and install.sh
+- Run the install.sh script (the script will prompt for database passwords for security and a better user experience)
 
+Visualization Tool:
+
+- Configure Apache Superset datasource and dataset with c##jdoe (analytical role).
+- Set up charts.
 
 ### Source Data preview
 ROK;MIESIAC;OW_NFZ;NIP_PODMIOTU;KOD_PRODUKTU_KONTRAKTOWEGO;KOD_PRODUKTU_JEDNOSTKOWEGO;KOD_TRYBU_PRZYJECIA;KOD_TRYBU_WYPISU;PLEC_PACJENTA;GRUPA_WIEKOWA_PACJENTA;PRZEDZIAL_DLUGOSCI_TRWANIA_HOSPITALIZACJI;LICZBA_HOSPITALIZACJI
@@ -65,7 +69,7 @@ ROK;MIESIAC;OW_NFZ;NIP_PODMIOTU;KOD_PRODUKTU_KONTRAKTOWEGO;KOD_PRODUKTU_JEDNOSTK
 2022;4;"13";"6572195982";"03.4500.030.02";"5.51.01.0006109";6;2;"K";"65 i wiecej";"3-5 dni";"<5"
 
 ------------
-## Idea
+## My notes
 - top 5 of disase by age group
 - Increase in hospitalization count for each age group
 - Increase in hospitalization length for each age group
