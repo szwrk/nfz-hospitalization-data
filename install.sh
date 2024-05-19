@@ -6,9 +6,13 @@ db_tns_datamart_pdb="192.168.0.51:1521/datamart"
 dba_name="sys"
 dev_name="c##jsmith"
 
-read -s -p 'Enter dba password : ' dba_pass
-echo ' '
-read -s -p 'Enter dev password : ' dev_pass
+
+check_success() {
+    if [ $? -ne 0 ]; then
+        echo "ERROR: The previous command failed. Exiting."
+        exit 1
+    fi
+}
 
 echo ""
 echo "======================================"
@@ -20,12 +24,26 @@ echo "3. Full data offline (manually load CSV from /data-full/)"
 echo ""
 read -p 'Select 1, 2, or 3...: ' load_mode
 
-check_success() {
-    if [ $? -ne 0 ]; then
-        echo "ERROR: The previous command failed. Exiting."
-        exit 1
-    fi
-}
+# DBA Credentials with validation (for fail-first approach)
+echo ' '
+read -s -p 'Enter dba password : ' dba_pass
+
+# DEV Credentials with validation
+echo ' '
+read -s -p 'Enter dev password : ' dev_pass
+
+
+echo ' '
+echo "Testing DB DBA connection..."
+sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA<<EOF
+${dba_pass}
+exit
+EOF
+
+# log the start time
+start_time=$(date +%s)
+
+
 echo ""
 echo "======================================"
 echo " Starting Drop Database Script"
@@ -54,12 +72,21 @@ cd ..
 echo "Database Objects Setup Script Completed"
 echo ""
 
+echo ' '
+echo "Testing DB dev connection..."
+sql -S ${dev_name}@${db_tns_datamart_pdb}<<EOF
+${dev_pass}
+exit
+EOF
+
 echo "======================================"
 echo " Starting Data Mart Build Script"
 echo "======================================"
 cd sql || exit 1
-sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA @2-create-mart.sql<<EOF
+sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA <<EOF
 ${dba_pass}
+SET SERVEROUTPUT ON
+@2-create-mart.sql
 exit
 EOF
 cd ..
@@ -94,5 +121,9 @@ elif [ "$load_mode" == "3" ]; then
     pwd
     sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log
 fi
+
 echo "Data Load Completed"
+end_time=$(date +%s)
+duration=$(( end_time - start_time ))
+echo "Execution time: $duration seconds"
 echo ""
