@@ -7,7 +7,7 @@ drop user c##jdoe cascade;
 
 ALTER SESSION SET CONTAINER = datamart;
 
-drop view dm_nfzhosp.mv_hospitalizations;
+drop materialized view dm_nfzhosp.mv_hospitalizations;
 drop table dm_nfzhosp.hospitalizacje_csv;
 drop user dm_nfzhosp cascade;
 drop user sysdm;
