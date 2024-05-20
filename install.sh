@@ -32,6 +32,8 @@ read -s -p 'Enter dba password : ' dba_pass
 echo ' '
 read -s -p 'Enter dev password : ' dev_pass
 
+# log the start time
+instalattion_start_time=$(date +%s)
 
 echo ' '
 echo "Testing DB DBA connection..."
@@ -39,9 +41,6 @@ sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA<<EOF
 ${dba_pass}
 exit
 EOF
-
-# log the start time
-start_time=$(date +%s)
 
 
 echo ""
@@ -98,9 +97,12 @@ echo " Loading Data"
 echo "======================================"
 # Execute SQL*Loader for 2019-2022
 
+# log the start time
+sqlloader_start_time=$(date +%s)
+
 if [ "$load_mode" == "1" ]; then
     echo "Use small demo dataset."
-    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/demo_nfz_hospitalizations_2019-2022.ctl log=log/demo_nfz_hospitalizations_2019-2022.log
+    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/demo_nfz_hospitalizations_2019-2022.ctl log=log/demo_nfz_hospitalizations_2019-2022.log direct=true 
 elif [ "$load_mode" == "2" ]; then
     echo "Downloading full csv (>1GB)..."
     pwd
@@ -116,14 +118,19 @@ elif [ "$load_mode" == "2" ]; then
     mv hospitalizacje.csv nfz_hospitalizations_2022.csv
     # Load data
     cd ..
-    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log
+    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log direct=true 
 elif [ "$load_mode" == "3" ]; then
     pwd
-    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log
+    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log direct=true
 fi
 
+sqlloader_end_time=$(date +%s)
 echo "Data Load Completed"
-end_time=$(date +%s)
-duration=$(( end_time - start_time ))
-echo "Execution time: $duration seconds"
+sqlloader_load_duration=$(( sqlloader_end_time - sqlloader_start_time ))
+echo "Loading time: $sqlloader_load_duration seconds"
+
+echo "Installation Completed"
+instalattion_end_time=$(date +%s)
+instalattion_duration=$(( instalattion_end_time - instalattion_start_time ))
+echo "Installation time: $instalattion_duration seconds"
 echo ""
