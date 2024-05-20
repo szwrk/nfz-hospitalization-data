@@ -122,6 +122,12 @@ Transforms: internationalization, NFZ departments codes, resolving dictionary fo
 ;
 
 CONNECT sysdm/oracle@192.168.0.51:1521/datamart;
+-- for direct data loading 
+GRANT INSERT, ALTER, DELETE, SELECT ON dm_nfzhosp.hospitalizacje_csv TO dm_engineer;
+GRANT RESOURCE TO dm_engineer;
+GRANT LOCK TABLE ON dm_nfzhosp.hospitalizacje_csv TO dm_engineer;
+GRANT DIRECT PATH TO dm_engineer;
+
 GRANT SELECT ON dm_nfzhosp.mv_hospitalizations TO dm_analyst;
 
 -- test data engineer account
