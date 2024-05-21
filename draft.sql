@@ -258,3 +258,68 @@ FROM w_hospitalizations_2022 hosp
  LEFT JOIN nfz_dept_dict dept_dict ON hosp.nfz_department_code = dept_dict.id_nfz;
 ;
 
+-- about SQLLoader, u can use direct for faster data loading, way to use 1. add to comment, 2. add parameter to control file, i tried with parall options but its not give me any decrease of execution time... for that simple case
+-- add refresh to script
+-- add mview statistics to script
+
+-- Table is too large (limit 12 GB in oracle version), so I convert my single analytical table into a classic star schema, extract dictionaries to dimansions, making the hospitalization table a fact table. I also add a layer for analytics users (synonyms, views for mv, privs)
+-- institution_nip_code is a candidate for dimension cardinality circa 8k
+CREATE MATERIALIZED VIEW dm_nfzhosp.mv_hospitalizations AS
+WITH 
+ w_hospitalizations AS (
+   SELECT
+      rok YEAR
+      ,miesiac MONTH
+      ,ow_nfz nfz_department_code
+      ,nip_podmiotu institution_nip_code
+      ,kod_produktu_kontraktowego nfz_contract_code
+      ,kod_produktu_jednostkowego nfz_service_code
+      ,kod_trybu_przyjecia admission_code
+      ,kod_trybu_wypisu discharge_code
+      ,plec_pacjenta patient_gender
+      ,grupa_wiekowa_pacjenta age_category
+      ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
+      ,liczba_hospitalizacji hospitalization_count
+   FROM dm_nfzhosp.hospitalization_source
+   ) 
+, w_nfz_dept_dict(id_nfz, region_name, nfz_abbr) AS (
+   SELECT 1 ,'Dolnośląski' , 'DŚ' UNION ALL
+   SELECT 2, 'Kujawsko-Pomorski', 'KP'  UNION ALL
+   SELECT 3, 'Lubelski', 'LB'  UNION ALL
+   SELECT 4, 'Lubuski', 'LS'  UNION ALL
+   SELECT 5, 'Łódzki', 'ŁD'  UNION ALL
+   SELECT 6, 'Małopolski', 'MP'  UNION ALL
+   SELECT 7, 'Mazowiecki', 'MZ'  UNION ALL
+   SELECT 8, 'Opolski', 'OP'  UNION ALL
+   SELECT 9, 'Podkarpacki', 'PK'  UNION ALL
+   SELECT 10, 'Podlaski', 'PL'  UNION ALL
+   SELECT 11, 'Pomorski', 'PM'  UNION ALL
+   SELECT 12, 'Śląski', 'ŚL'  UNION ALL
+   SELECT 13, 'Świętokrzyski', 'ŚK'  UNION ALL
+   SELECT 14, 'Warmińsko-Mazurski', 'WM'  UNION ALL
+   SELECT 15, 'Wielkopolski', 'WP'  UNION ALL
+   SELECT 16, 'Zachodniopomorski', 'ZP' 
+)
+SELECT 
+  hosp.YEAR || '/' || lpad(hosp.MONTH,2,0) as hosp_date_period
+ ,dept_dict.nfz_abbr || ' (' || lpad(hosp.nfz_department_code,2,0) || ')' dept_name_code
+ ,hosp.institution_nip_code institution_nip_code
+ ,hosp.nfz_service_code nfz_service_code
+ ,hosp.nfz_contract_code nfz_contract_code
+ ,CASE hosp.patient_gender 
+    WHEN 'K' THEN 'F'
+    WHEN 'M' THEN 'M'
+    ELSE '-'
+ END as patient_gender
+ ,REPLACE(hosp.age_category,'65 i więcej','>65') age_category
+ ,CASE hosp.hosp_length_in_day_category 
+    WHEN '6 i więcej dni' THEN '>6'
+    WHEN '0 dni' THEN '0'
+    WHEN '3-5 dni' THEN '3-5'
+    WHEN '1-2 dni' THEN '1-2'
+   ELSE '-' 
+   END AS hosp_length_in_day_category 
+FROM w_hospitalizations hosp
+   LEFT JOIN w_nfz_dept_dict dept_dict ON hosp.nfz_department_code = dept_dict.id_nfz
+   -- WHERE hosp.year >= 2020
+;
