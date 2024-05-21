@@ -9,6 +9,7 @@ ALTER SESSION SET CONTAINER = datamart;
 
 drop materialized view dm_nfzhosp.mv_hospitalizations;
 drop table dm_nfzhosp.hospitalizacje_csv;
+drop table dm_nfzhosp.nfz_dicts;
 drop user dm_nfzhosp cascade;
 drop user sysdm;
 
