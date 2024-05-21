@@ -5,7 +5,7 @@ db_tns_datamart_pdb="192.168.0.51:1521/datamart"
 
 dba_name="sys"
 dev_name="c##jsmith"
-
+datamart_admin_name="sysdm"
 
 check_success() {
     if [ $? -ne 0 ]; then
@@ -31,6 +31,10 @@ read -s -p 'Enter dba password : ' dba_pass
 # DEV Credentials with validation
 echo ' '
 read -s -p 'Enter dev password : ' dev_pass
+
+# DEV Credentials with validation
+echo ' '
+read -s -p 'Enter datamart password : ' datamart_admin_pass
 
 # log the start time
 instalattion_start_time=$(date +%s)
@@ -120,7 +124,6 @@ elif [ "$load_mode" == "2" ]; then
     cd ..
     sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log direct=true 
 elif [ "$load_mode" == "3" ]; then
-    pwd
     sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log direct=true
 fi
 
@@ -128,6 +131,34 @@ sqlloader_end_time=$(date +%s)
 echo "Data Load Completed"
 sqlloader_load_duration=$(( sqlloader_end_time - sqlloader_start_time ))
 echo "Loading time: $sqlloader_load_duration seconds"
+
+sql -S ${datamart_admin_name}@${db_tns_datamart_pdb} <<EOF
+${datamart_admin_pass}
+SET SERVEROUTPUT ON
+PROMPT MView Initializing...
+BEGIN
+ DBMS_MVIEW.REFRESH(
+    list => 'dm_nfzhosp.mv_hospitalizations',
+    method => 'c'
+);
+END;
+/
+EXIT;
+EOF
+
+
+sql -S ${datamart_admin_name}@${db_tns_datamart_pdb} <<EOF
+${datamart_admin_pass}
+SET SERVEROUTPUT ON
+PROMPT Schema statistics calculation...
+BEGIN
+ DBMS_STATS.GATHER_SCHEMA_STATS(
+    ownname => 'dm_nfzhosp'
+);
+END;
+/
+EXIT;
+EOF
 
 echo "Installation Completed"
 instalattion_end_time=$(date +%s)
