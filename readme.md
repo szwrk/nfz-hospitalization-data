@@ -49,23 +49,23 @@ The dictionary source for Polish HL7 implementations includes:
 
 ## Installation
 
-
-
-Data Part:
+**Data Part:**
 
 - Set up the Oracle database.
 - Copy the repository
 - Review server parameters (TNS, IP, service name) in the sql/ directory scripts and install.sh
 - Run the install.sh script (the script will prompt for database passwords for security and a better user experience)
-![Installation](assets/install.gif)
-Visualization Tool:
 
-- Configure Apache Superset datasource and dataset with c##jdoe credentials (analytical role), use SqlAlchemu url
+![Installation](assets/install.gif)
+*Figure 1: Demonstration of the installation process (gif animations)*
+
+**Visualization Tool:**
+
+- Configure the Apache Superset datasource and dataset with c##jdoe credentials (analytical role), using SqlAlchemu url
 
 `url
 oracle+cx_oracle://c##jdoe:oracle@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.0.51)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=datamart)))
 `
-
 - Set up charts.
 
 
