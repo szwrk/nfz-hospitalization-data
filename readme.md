@@ -57,6 +57,7 @@ The dictionary source for Polish HL7 implementations includes:
 - Run the install.sh script (the script will prompt for database passwords for security and a better user experience)
 
 ![Installation](assets/install.gif)
+
 *Figure 1: Demonstration of the installation process (gif animations)*
 
 **Visualization Tool:**
