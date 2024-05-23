@@ -1,0 +1,68 @@
+@startuml
+!theme toy
+' configuration
+hide circle
+
+package "Oracle PDB 'DATAMART'" as schema <<Rectangle>> {
+
+' Define tablespaces outside the schema
+package "Tablespaces" as tbs {
+package tbs_datamart{}
+package tbs_datamart_idx{}
+}
+
+package "Schema 'dm_nfzhosp' as NFZ Data Mart" as schema {
+package "Objects accessible by R_ANALYST role"<<Rectangle>>{
+
+entity "F_HOSPITALIZATIONS" as f_hosps {
+}
+
+note right of f_hosps 
+  Synonym to MV_HOSPITALIZATIONS
+end note
+
+entity "DIM_DATE" as dim_date{
+ id: number
+}
+
+entity "DIM_NFZDICTS" as dim_nfzdicts{
+ + id: number
+ dict_code: varchar2
+---
+}
+note bottom of dim_nfzdicts
+Dimension table for NFZ dictionaries
+like admission and discharge codes
+end note
+
+entity "DIM_INSTITUTION" as dim_insts{
+ id: number
+---
+}
+note bottom of dim_insts
+  Dimension table for institution
+end note
+}
+
+entity "HOSPITALIZACJE_CSV" as hosp_csv{
+}
+
+note bottom of hosp_csv
+  Table for loading raw csv data
+end note
+
+entity "MV_HOSPITALIZATIONS" as mv_hosp{
+}
+
+note bottom of mv_hosp
+  Materialized View for refresh data
+end note
+
+}
+}
+
+
+f_hosps }|--|| dim_date : "has a"
+f_hosps }|--|| dim_nfzdicts : "has a"
+f_hosps }|--|| dim_insts : "has a"
+@enduml

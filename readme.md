@@ -37,7 +37,10 @@ It's based on the public goverment repositories hub named data.gov.pl.
 Used repository is good quality, but I want to make some improvments, create DWH star schema, materialized view as fact table, dimensions etc...
 I will clean and process the data to visualize it with Apache Superset.
 
-### Domain dictionaries
+### Model and Domain dictionaries
+
+![Diagram](assets/diagram.png)
+
 The data contains some foreign keys pointing to static dictionaries:
 - dim_discharge_mode_dict 
 - dim_admission_mode_dict (both as general dictionary, no-changing dimension)
