@@ -21,6 +21,12 @@ Ad*
 https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/45162
 https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/54046
 
+The dataset comprises over 20 million records, with each record representing an individual patient's hospitalization data.
+
+It's based on the public goverment repositories hub named data.gov.pl.
+Used repository is good quality, but I want to make some improvments, create DWH star schema, materialized view as fact table, dimensions etc...
+I will clean and process the data to visualize it with Apache Superset.
+
 ## Tech stack
 This repository showcases my Data Engineering project, highlighting my diverse data-related skills. 
 It includes database administration, data warehousing, and ETL development tasks.
@@ -43,24 +49,9 @@ The project is currently only available on my localhost, so included some script
 - Others 
    * PlantUml for diagrams
 
-## About data
-The dataset comprises over 20 million records, with each record representing an individual patient's hospitalization data.
 
-It's based on the public goverment repositories hub named data.gov.pl.
-Used repository is good quality, but I want to make some improvments, create DWH star schema, materialized view as fact table, dimensions etc...
-I will clean and process the data to visualize it with Apache Superset.
 
-### Domain dictionaries
-The data contains some foreign keys pointing to static dictionaries:
-- dim_discharge_mode_dict 
-- dim_admission_mode_dict (both as general dictionary, no-changing dimension)
-- dim_nfz_dept_dict (inline yet as CTE)
-- dim_institution (#todo)
-
-The dictionary source for Polish HL7 implementations includes:
-- discharge modes https://www.cez.gov.pl/HL7POL-1.3.2/plcda-html-1.3.2/plcda-html/voc-2.16.840.1.113883.3.4424.13.11.36-2015-10-26T000000.html
-
-### Model
+## Model
 
 ![Diagram](assets/diagram.png)
 *Figure 1: DWH Model*
@@ -81,6 +72,17 @@ The dictionary source for Polish HL7 implementations includes:
 **Roles**
 - Role R_ENGINEER is used for develepers. That's have strong privilages. Granted user: C##JSMITH
 - R_ANALYST is used for. Granted user: C##JDOE
+
+
+### Domain dictionaries
+The data contains some foreign keys pointing to static dictionaries:
+- dim_discharge_mode_dict 
+- dim_admission_mode_dict (both as general dictionary, no-changing dimension)
+- dim_nfz_dept_dict (inline yet as CTE)
+- dim_institution (#todo)
+
+The dictionary source for Polish HL7 implementations includes:
+- discharge modes https://www.cez.gov.pl/HL7POL-1.3.2/plcda-html-1.3.2/plcda-html/voc-2.16.840.1.113883.3.4424.13.11.36-2015-10-26T000000.html
 
 ## Installation
 
