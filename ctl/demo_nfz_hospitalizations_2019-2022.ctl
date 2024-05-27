@@ -1,4 +1,5 @@
 LOAD DATA
+CHARACTERSET UTF8
 INFILE 'data-demo/demo_nfz_hospitalizations_2019-2021.csv'
 INFILE 'data-demo/demo_nfz_hospitalizations_2022.csv'
 APPEND INTO TABLE dm_nfzhosp.hospitalizacje_csv
