@@ -17,14 +17,17 @@
 ## About the Project
 This project is based on real NFZ data sourced from the open-data portal, dane.gov.pl.
 The dataset comprises all hospitalizations covered by the NFZ (National Health Fund of Poland) in 2019-2022 *.
-Ad*
-https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/45162
-https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/54046
+
+- [Dane dotyczące hospitalizacji rozliczonych JGP w latach 2019-2021 ](https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/45162) (containt hospitalizations start with 2017, 2018)
+- [Dane dotyczące hospitalizacji rozliczonych JGP w latach 2022 ](https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/54046)
 
 The dataset comprises over 20 million records, with each record representing an individual patient's hospitalization data.
 
 It's based on the public goverment repositories hub named data.gov.pl.
-Used repository is good quality, but I want to make some improvments, create DWH star schema, materialized view as fact table, dimensions etc...
+
+- [Source Licence](https://creativecommons.org/publicdomain/zero/1.0/legalcode.pl)
+
+Used repository is not bad quality, but I saw small differences between files. I want to make some improvements, create DWH star schema, materialized view as fact table, dimensions etc...
 I will clean and process the data to visualize it with Apache Superset.
 
 ## Tech stack
