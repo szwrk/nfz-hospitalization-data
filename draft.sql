@@ -323,3 +323,108 @@ FROM w_hospitalizations hosp
    LEFT JOIN w_nfz_dept_dict dept_dict ON hosp.nfz_department_code = dept_dict.id_nfz
    -- WHERE hosp.year >= 2020
 ;
+/**
+Dimension date as surogate vs yyyymmdd?
+Human readable vs performance.
+Small int vs number.
+For my slow server and oracle express limits.. i prefer better optymalizatio
+*/
+CREATE TABLE DIM_DATE AS
+SELECT 
+   ROWNUM AS id_date
+   ,TO_CHAR(ADD_MONTHS(TO_DATE('2019-01-01','YYYY-MM-DD'), LEVEL)
+      ,'YYYY') AS YEAR
+   ,TO_CHAR(ADD_MONTHS(TO_DATE('2019-01-01','YYYY-MM-DD'), LEVEL)
+      ,'MM') AS MONTH
+FROM DUAL
+CONNECT BY LEVEL <= MONTHS_BETWEEN(TO_DATE('2030-01-01','YYYY-MM-DD'),TO_DATE('2019-01-01','YYYY-MM-DD')) 
+;
+ALTER TABLE HOSPITALIZACJE_CSV ADD DATE_ID NUMBER
+; 
+UPDATE HOSPITALIZACJE_CSV H SET DATE_ID = (SELECT ID FROM DIM_DATE DIM WHERE DIM.YEAR = H.ROK AND DIM.MONTH = H.MIESIAC)
+;
+drop table dim_date
+;
+CREATE TABLE DIM_DATE AS
+SELECT 
+   ROWNUM AS id_date
+   ,TO_NUMBER(
+      TO_CHAR(ADD_MONTHS(TO_DATE('2017-01-01','YYYY-MM-DD'), LEVEL -1)
+      ,'YYYY')) AS YEAR
+   ,TO_NUMBER(
+      TO_CHAR(ADD_MONTHS(TO_DATE('2017-01-01','YYYY-MM-DD'), LEVEL -1)
+      ,'FMMM')) AS MONTH
+FROM DUAL
+CONNECT BY LEVEL <= MONTHS_BETWEEN(TO_DATE('2030-01-01','YYYY-MM-DD'),TO_DATE('2017-01-01','YYYY-MM-DD')) 
+;
+
+ALTER TABLE HOSPITALIZACJE_CSV ADD DATE_ID NUMBER; 
+
+UPDATE HOSPITALIZACJE_CSV H SET DATE_ID = (SELECT ID FROM DIM_DATE DIM WHERE DIM.YEAR = H.ROK AND DIM.MONTH = H.MIESIAC)
+;
+DESC HOSPITALIZATION_SOURCE;
+
+UPDATE HOSPITALIZACJE_CSV H SET DATE_ID = (SELECT ID FROM DIM_DATE DIM WHERE DIM.YEAR = H.ROK AND DIM.MONTH = H.MIESIAC)
+;
+
+WITH 
+ w_hospitalizations AS (
+   SELECT
+      rok YEAR
+      ,miesiac MONTH
+      ,ow_nfz nfz_department_code
+      ,nip_podmiotu institution_nip_code
+      ,kod_produktu_kontraktowego nfz_contract_code
+      ,kod_produktu_jednostkowego nfz_service_code
+      ,kod_trybu_przyjecia admission_code
+      ,kod_trybu_wypisu discharge_code
+      ,plec_pacjenta patient_gender
+      ,grupa_wiekowa_pacjenta age_category
+      ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
+      ,liczba_hospitalizacji hospitalization_count
+   FROM dm_nfzhosp.hospitalization_source
+   ) 
+, w_nfz_dept_dict(id_nfz, region_name, nfz_abbr) AS (
+   SELECT 1 ,'Dolnośląski' , 'DŚ' UNION ALL
+   SELECT 2, 'Kujawsko-Pomorski', 'KP'  UNION ALL
+   SELECT 3, 'Lubelski', 'LB'  UNION ALL
+   SELECT 4, 'Lubuski', 'LS'  UNION ALL
+   SELECT 5, 'Łódzki', 'ŁD'  UNION ALL
+   SELECT 6, 'Małopolski', 'MP'  UNION ALL
+   SELECT 7, 'Mazowiecki', 'MZ'  UNION ALL
+   SELECT 8, 'Opolski', 'OP'  UNION ALL
+   SELECT 9, 'Podkarpacki', 'PK'  UNION ALL
+   SELECT 10, 'Podlaski', 'PL'  UNION ALL
+   SELECT 11, 'Pomorski', 'PM'  UNION ALL
+   SELECT 12, 'Śląski', 'ŚL'  UNION ALL
+   SELECT 13, 'Świętokrzyski', 'ŚK'  UNION ALL
+   SELECT 14, 'Warmińsko-Mazurski', 'WM'  UNION ALL
+   SELECT 15, 'Wielkopolski', 'WP'  UNION ALL
+   SELECT 16, 'Zachodniopomorski', 'ZP' 
+)
+SELECT 
+ (SELECT ID FROM DIM_DATE DIM WHERE DIM.YEAR = hosp.YEAR AND DIM.MONTH = hosp.month)  dim_id
+ ,dept_dict.nfz_abbr || ' (' || lpad(hosp.nfz_department_code,2,0) || ')' dept_name_code
+ ,hosp.institution_nip_code institution_nip_code
+ ,hosp.nfz_service_code nfz_service_code
+ ,hosp.nfz_contract_code nfz_contract_code
+ ,CASE hosp.patient_gender 
+    WHEN 'K' THEN 'F'
+    WHEN 'M' THEN 'M'
+    ELSE hosp.patient_gender 
+ END as patient_gender
+ ,REPLACE(hosp.age_category,'65 i wiecej','>65') age_category
+ ,CASE substr(hosp.hosp_length_in_day_category,0,1)
+    WHEN '6' THEN '>6'
+    WHEN '0' THEN '0'
+    WHEN '3' THEN '3-5'
+    WHEN '1' THEN '1-2'
+   ELSE hosp.hosp_length_in_day_category
+   END AS hosp_length_in_day_category 
+FROM w_hospitalizations hosp
+   LEFT JOIN w_nfz_dept_dict dept_dict ON hosp.nfz_department_code = dept_dict.id_nfz
+;
+select * from DIM_DATE;
+
+
+SELECT value FROM nls_database_parameters WHERE parameter = 'NLS_CHARACTERSET';
