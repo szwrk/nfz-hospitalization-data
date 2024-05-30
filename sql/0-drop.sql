@@ -7,12 +7,17 @@ drop user c##jdoe cascade;
 
 ALTER SESSION SET CONTAINER = datamart;
 
-drop materialized view dm_nfzhosp.mv_hospitalizations;
-drop table dm_nfzhosp.hospitalizacje_csv;
-drop table dm_nfzhosp.nfz_dicts;
-drop table dm_nfzhosp.dim_nfz_dept;
+-- drop materialized view dm_nfzhosp.mv_hospitalizations;
+-- drop table dm_nfzhosp.hospitalizacje_csv;
+-- drop table dm_nfzhosp.nfz_dicts;
 
-drop synonym dm_nfzhosp.hospitalization_source;
+-- drop table dm_nfzhosp.dim_contracts;
+-- drop table dm_nfzhosp.dim_services;
+-- drop table dm_nfzhosp.dim_departments;
+
+-- drop view dm_nfzhosp.trnsltd_hospitalizations;
+-- drop synonym dm_nfzhosp.hospitalizations_source;
+
 drop user dm_nfzhosp cascade;
 drop user sysdm;
 
