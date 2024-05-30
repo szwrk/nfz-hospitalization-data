@@ -428,3 +428,20 @@ select * from DIM_DATE;
 
 
 SELECT value FROM nls_database_parameters WHERE parameter = 'NLS_CHARACTERSET';
+;
+-- 20240528
+drop table dm_nfzhosp.dim_nfzcontract
+;
+--CREATE TABLE dim_nfzcontract AS
+SELECT 
+   CAST(ROWNUM AS NUMBER(4)) AS id_contract
+   ,code
+   ,sysdate as create_dt
+   ,uid
+FROM (
+   SELECT 
+      DISTINCT(VALUE) AS code
+   FROM (SELECT VALUE FROM (SELECT DISTINCT (F.nfz_contract_code) AS VALUE FROM f_hospitalizations F))
+)
+;
+-- CURRENT USER
