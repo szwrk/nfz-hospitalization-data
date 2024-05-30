@@ -23,11 +23,30 @@ COMMENT ON TABLE hospitalizacje_csv
 IS 'CSV raw data from public source hospitalization jgp 2019-2021 + 2022 - data.gov.pl)'
 ;
 
-CREATE SYNONYM hospitalization_source FOR dm_nfzhosp.hospitalizacje_csv;
+CREATE VIEW trnsltd_hospitalizations AS (
+   SELECT
+      rok YEAR
+      ,miesiac MONTH
+      ,ow_nfz department_code
+      ,nip_podmiotu nip_code
+      ,kod_produktu_kontraktowego contract_code
+      ,kod_produktu_jednostkowego service_code
+      ,kod_trybu_przyjecia admission_code
+      ,kod_trybu_wypisu discharge_code
+      ,plec_pacjenta patient_gender
+      ,grupa_wiekowa_pacjenta age_category
+      ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
+      ,liczba_hospitalizacji hospitalization_count
+   FROM dm_nfzhosp.hospitalizacje_csv
+   ) 
+;
+   
+CREATE SYNONYM hospitalizations FOR dm_nfzhosp.trnsltd_hospitalizations;   
 
---Dimension NFZ Departements Regions
-CREATE TABLE dm_nfzhosp.dim_nfz_dept AS 
-WITH w_nfz_dept_dict(id_dept, region_name, nfz_abbr) AS (
+/*Dimension - static */
+--Dimension NFZ Departements Regions - static
+CREATE TABLE dm_nfzhosp.dim_departments AS 
+WITH w_nfz_dept_dict(id_department, region_name, nfz_abbr) AS (
    SELECT 1 ,'Dolnośląski' , 'DŚ' UNION ALL
    SELECT 2, 'Kujawsko-Pomorski', 'KP'  UNION ALL
    SELECT 3, 'Lubelski', 'LB'  UNION ALL
@@ -42,17 +61,19 @@ WITH w_nfz_dept_dict(id_dept, region_name, nfz_abbr) AS (
    SELECT 12, 'Śląski', 'ŚL'  UNION ALL
    SELECT 13, 'Świętokrzyski', 'ŚK'  UNION ALL
    SELECT 14, 'Warmińsko-Mazurski', 'WM'  UNION ALL
-   SELECT 15, 'Wielkopolski', 'WP'   
+   SELECT 15, 'Wielkopolski', 'WP' UNION ALL    
+   SELECT 16, 'Zachodniopomorski','ZP'
    )
    SELECT 
-      id_dept
+      id_department
       ,region_name
       ,nfz_abbr
    FROM w_nfz_dept_dict
 ;
---Dimension NFZ Dictionaries
+
+--Dimension NFZ Dictionaries - static
 CREATE TABLE dm_nfzhosp.dim_nfzdicts AS 
-WITH w_discharge_mode_dict(id_pos, value) AS (
+WITH w_discharge_mode_dict(id_position, value) AS (
    SELECT 1,'zakończenie procesu terapeutycznego lub diagnostycznego' UNION ALL
    SELECT 2,'skierowanie do dalszego leczenia w lecznictwie ambulatoryjnym' UNION ALL
    SELECT 3,'skierowanie do dalszego leczenia w innym szpitalu' UNION ALL
@@ -64,7 +85,7 @@ WITH w_discharge_mode_dict(id_pos, value) AS (
    SELECT 10 ,'osoba leczona, przyjęta w trybie oznaczonym kodem "9" lub "10", która samowolnie opuściła podmiot leczniczy' UNION ALL
    SELECT 11 ,'wypisanie na podstawie art. 46 albo 47 ustawy z dnia 22 listopada 2013 r.'
  )
- ,w_admission_mode_dict(id_pos, value) AS (
+ ,w_admission_mode_dict(id_position, value) AS (
   SELECT 1, 'Przyjęcie planowe' UNION ALL
   SELECT 2, 'Przyjęcie w trybie nagłym w wyniku przekazania przez zespół ratownictwa medycznego' UNION ALL
   SELECT 3, 'Przyjęcie w trybie nagłym – inne przypadki' UNION ALL
@@ -77,63 +98,61 @@ WITH w_discharge_mode_dict(id_pos, value) AS (
   SELECT 10, 'Przyjęcie przymusowe' UNION ALL
   SELECT 11, 'Przyjęcie na podstawie karty diagnostyki i leczenia onkologicznego'
 )
-SELECT 'DISM' as dict_code, d.id_pos, d.value FROM w_discharge_mode_dict d
+SELECT 'DISM' AS dict_code, D.id_position, D.value FROM w_discharge_mode_dict D
   UNION ALL
-SELECT 'ADMM', a.id_pos, a.value FROM w_admission_mode_dict a
+SELECT 'ADMM', A.id_position, A.value FROM w_admission_mode_dict A
 ;
 
---Dimension Dates
+--Dimension Dates - static
 CREATE TABLE dm_nfzhosp.dim_date AS
 SELECT
-  CAST(ROWNUM AS NUMBER(3)) as id_date
+  CAST(ROWNUM AS NUMBER(3)) AS id_date
    ,TO_NUMBER(
-      TO_CHAR(ADD_MONTHS(TO_DATE('2017-01-01','YYYY-MM-DD'), LEVEL -1)
+      to_char(add_months(TO_DATE('2017-01-01','YYYY-MM-DD'), LEVEL -1)
       ,'YYYY')) AS YEAR
    ,TO_NUMBER(
-      TO_CHAR(ADD_MONTHS(TO_DATE('2017-01-01','YYYY-MM-DD'), LEVEL -1)
+      to_char(add_months(TO_DATE('2017-01-01','YYYY-MM-DD'), LEVEL -1)
       ,'FMMM')) AS MONTH
-FROM DUAL
-CONNECT BY LEVEL <= MONTHS_BETWEEN(TO_DATE('2030-01-01','YYYY-MM-DD'),TO_DATE('2017-01-01','YYYY-MM-DD'))
+FROM dual
+CONNECT BY LEVEL <= months_between(TO_DATE('2030-01-01','YYYY-MM-DD'),TO_DATE('2017-01-01','YYYY-MM-DD'))
 ;
+/**/
+--Dimension NFZ Contracts
+CREATE TABLE dm_nfzhosp.dim_contracts (
+   id_contract NUMBER(4)
+   ,contract_code VARCHAR2(100)
+);
 
+--Dimension NFZ Services
+CREATE TABLE dm_nfzhosp.dim_services (
+    id_service NUMBER(5),
+    service_code VARCHAR2(100) -- Adjust the length as per your data
+);
 
-CREATE VIEW dim_nfz_discharges as select * from dm_nfzhosp.dim_nfzdicts d where d.dict_code = 'DISM';
-CREATE VIEW dim_nfz_admissions as select * from dm_nfzhosp.dim_nfzdicts d where d.dict_code = 'ADMM';
+--Dimension NFZ Institution
+CREATE TABLE dm_nfzhosp.dim_institutions (
+    id_institution NUMBER(5),
+    nip_code VARCHAR2(100) -- Adjust the length as per your data
+);
+
+-- User views
+CREATE VIEW dim_nfz_discharges AS SELECT * FROM dm_nfzhosp.dim_nfzdicts D WHERE D.dict_code = 'DISM';
+CREATE VIEW dim_nfz_admissions AS SELECT * FROM dm_nfzhosp.dim_nfzdicts D WHERE D.dict_code = 'ADMM';
 
 -- Materialized view for refreshing data
 CREATE MATERIALIZED VIEW dm_nfzhosp.mv_hospitalizations AS
-WITH 
- w_trnsltd_hospitalizations AS (
-   SELECT
-      rok YEAR
-      ,miesiac MONTH
-      ,ow_nfz nfz_department_code
-      ,nip_podmiotu institution_nip_code
-      ,kod_produktu_kontraktowego nfz_contract_code
-      ,kod_produktu_jednostkowego nfz_service_code
-      ,kod_trybu_przyjecia admission_code
-      ,kod_trybu_wypisu discharge_code
-      ,plec_pacjenta patient_gender
-      ,grupa_wiekowa_pacjenta age_category
-      ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
-      ,liczba_hospitalizacji hospitalization_count
-   FROM dm_nfzhosp.hospitalization_source
-   )  
 SELECT 
-  dimdate.id_date dim_id
- ,hosp.institution_nip_code institution_nip_code
- ,hosp.nfz_service_code nfz_service_code
- ,hosp.nfz_contract_code nfz_contract_code
- ,dimdept.id_dept dept_id
+  dimdate.id_date dim_date_id
+ ,diminst.id_institution dim_institution_id
+ ,dimcontr.id_contract AS dim_contract_id
+ ,dimdept.id_department dim_department_id
+ ,dimserv.id_service dim_service_id
  ,CASE 
-      WHEN hosp.patient_gender  = '1' THEN 'F'
-      WHEN hosp.patient_gender  = '2' THEN 'M'
-      WHEN hosp.patient_gender  = 'K' THEN 'F'
-      WHEN hosp.patient_gender  = 'M' THEN 'M'
-      WHEN hosp.patient_gender  = '0' THEN '?'
-      WHEN hosp.patient_gender  = '9' THEN '?'
+   WHEN TRIM(hosp.patient_gender) IN ('1', 'K') THEN 'F'
+   WHEN TRIM(hosp.patient_gender) IN ('2', 'M') THEN 'M'
+   WHEN TRIM(hosp.patient_gender) IN ('0', '9') THEN '?'
    ELSE '-'
-   END patient_gender
+  END patient_gender
  ,REPLACE(hosp.age_category,'65 i więcej','>65') age_category
  ,CASE hosp.hosp_length_in_day_category 
     WHEN  '6 i więcej dni' THEN '>6'
@@ -142,9 +161,12 @@ SELECT
     WHEN '1-2 dni' THEN '1-2'
    ELSE '-' 
    END AS hosp_length_in_day_category 
-FROM w_trnsltd_hospitalizations hosp
-   LEFT JOIN dm_nfzhosp.dim_date dimdate ON dimdate.year = hosp.year AND dimdate.month = hosp.month
-   LEFT JOIN dm_nfzhosp.dim_nfz_dept dimdept ON dimdept.id_dept = hosp.nfz_department_code
+FROM trnsltd_hospitalizations hosp
+   LEFT JOIN dm_nfzhosp.dim_date dimdate ON dimdate.YEAR = hosp.YEAR AND dimdate.MONTH = hosp.MONTH
+   LEFT JOIN dm_nfzhosp.dim_departments dimdept ON dimdept.id_department = hosp.department_code
+   LEFT JOIN dm_nfzhosp.dim_contracts dimcontr ON dimcontr.contract_code = hosp.contract_code
+   LEFT JOIN dm_nfzhosp.dim_services dimserv ON dimserv.service_code = hosp.service_code
+   LEFT JOIN dm_nfzhosp.dim_institutions diminst ON diminst.nip_code = hosp.nip_code
 ;
 
 COMMENT ON MATERIALIZED VIEW dm_nfzhosp.mv_hospitalizations
@@ -155,8 +177,10 @@ Transforms: internationalization, NFZ departments codes, resolving dictionary fo
 ;
 
 --Create facts view for users
-CREATE VIEW f_hospitalizations as 
-select * from dm_nfzhosp.mv_hospitalizations;
+CREATE VIEW f_hospitalizations AS 
+SELECT *
+FROM trnsltd_hospitalizations hosp
+;
 
 CONNECT sysdm/oracle@192.168.0.51:1521/datamart;
 -- for direct data loading 
@@ -172,18 +196,48 @@ GRANT SELECT ON dm_nfzhosp.dim_nfz_admissions TO dm_analyst;
 GRANT SELECT ON dm_nfzhosp.dim_date TO dm_analyst;
 
 CONNECT sysdm/oracle@192.168.0.51:1521/datamart;
-ALTER TABLE dm_nfzhosp.dim_date
-ADD CONSTRAINT id_date_pk PRIMARY KEY (id_date);
+--Primary keys
+ALTER TABLE dm_nfzhosp.dim_departments ADD CONSTRAINT pk_dim_departments PRIMARY KEY (id_department);
+ALTER TABLE dm_nfzhosp.dim_nfzdicts ADD CONSTRAINT pk_dim_nfzdicts PRIMARY KEY (dict_code, id_position);
+ALTER TABLE dm_nfzhosp.dim_date ADD CONSTRAINT pk_dim_date PRIMARY KEY (id_date);
+ALTER TABLE dm_nfzhosp.dim_contracts ADD CONSTRAINT pk_dim_contracts PRIMARY KEY (id_contract);
+ALTER TABLE dm_nfzhosp.dim_services ADD CONSTRAINT pk_dim_services PRIMARY KEY (id_service);
+ALTER TABLE dm_nfzhosp.dim_institutions ADD CONSTRAINT pk_dim_institutions PRIMARY KEY (id_institution);
+--Foreign keys
+ALTER TABLE dm_nfzhosp.mv_hospitalizations
+ADD CONSTRAINT fk_mv_hosp_dim_date
+FOREIGN KEY (dim_date_id)
+REFERENCES dm_nfzhosp.dim_date(id_date);
+
+ALTER TABLE dm_nfzhosp.mv_hospitalizations
+ADD CONSTRAINT fk_mv_hosp_dim_institutions
+FOREIGN KEY (dim_institution_id)
+REFERENCES dm_nfzhosp.dim_institutions(id_institution);
+
+ALTER TABLE dm_nfzhosp.mv_hospitalizations
+ADD CONSTRAINT fk_mv_hosp_dim_contracts
+FOREIGN KEY (dim_contract_id)
+REFERENCES dm_nfzhosp.dim_contracts(id_contract);
+
+ALTER TABLE dm_nfzhosp.mv_hospitalizations
+ADD CONSTRAINT fk_mv_hosp_dim_departments
+FOREIGN KEY (dim_department_id)
+REFERENCES dm_nfzhosp.dim_departments(id_department);
+
+ALTER TABLE dm_nfzhosp.mv_hospitalizations
+ADD CONSTRAINT fk_mv_hosp_dim_services
+FOREIGN KEY (dim_service_id)
+REFERENCES dm_nfzhosp.dim_services(id_service);
 
 CONNECT c##jsmith/oracle@192.168.0.51:1521/datamart;
--- test data engineer account
+-- Test data engineer account
 SELECT COUNT(1) AS eng_mview_test
 FROM dm_nfzhosp.mv_hospitalizations
 ;
 SELECT COUNT(1) AS eng_fact_test
 FROM dm_nfzhosp.f_hospitalizations
 ;
---test analyst account
+-- Test analyst account
 CONNECT c##jdoe/oracle@192.168.0.51:1521/datamart;
 SET SERVEROUTPUT ON
 SELECT COUNT(1) AS analyst_connection_test
