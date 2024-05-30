@@ -1,4 +1,4 @@
-# Analyzing 21,194,350 Hospitalization Records from Poland's National Health Fund NFZ (2019-2022)
+# Analyzing 21,194,349 Hospitalization Records from Poland's National Health Fund NFZ (2019-2022)
 **NFZ Hospitalization Data ETL & Visualization | A Low-Level Approach with SQL, Shell Scripts, SQLLoader and Apache Superset**
 
 
@@ -89,8 +89,10 @@ The dictionary source for Polish HL7 implementations includes:
 
 ## Installation
 
-**Data Part:**
+**Tool**
+- Set up default coding to UTF-8 (SQLDeveloper, Sublime, DB instance)
 
+**Data Part:**
 - Set up the Oracle database.
 - Copy the repository
 - Review server parameters (TNS, IP, service name) in the sql/ directory scripts and install.sh
@@ -122,6 +124,8 @@ ROK;MIESIAC;OW_NFZ;NIP_PODMIOTU;KOD_PRODUKTU_KONTRAKTOWEGO;KOD_PRODUKTU_JEDNOSTK
 - top 5 of disase by age group
 - increase in hospitalization count for each age group
 - increase in hospitalization length for each age group
+## Issues
+Gender code: 1 2 K M 0 9 
 
 #### Key words
-#nfz #data #etl #elt #bi #BuissnessInteligance #dataVisualisation #healthcare #dataengineering #analyst
+#nfz #data #etl #elt #bi #BuissnessInteligance #dataVisualisation #healthcare #dataengineering #analyst #pipeline #dataops #utplsql #liquid
