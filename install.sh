@@ -7,6 +7,11 @@ dba_name="sys"
 dev_name="c##jsmith"
 datamart_admin_name="sysdm"
 
+# load_mode=3
+# dba_pass="oracle"
+# dev_pass="oracle"
+# datamart_admin_pass="oracle"
+
 check_success() {
     if [ $? -ne 0 ]; then
         echo "ERROR: The previous command failed. Exiting."
@@ -67,7 +72,7 @@ echo "======================================"
 echo " Starting Database Objects Setup Script"
 echo "======================================"
 cd sql || exit 1
-sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA @1-Setup-db.sql<<EOF
+sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA @1-setup-db.sql<<EOF
 ${dba_pass}
 exit
 EOF
@@ -86,12 +91,11 @@ echo "======================================"
 echo " Starting Data Mart Build Script"
 echo "======================================"
 cd sql || exit 1
-sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA <<EOF
+sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA @2-create-mart.sql <<EOF
 ${dba_pass}
-SET SERVEROUTPUT ON
-@2-create-mart.sql
 exit
 EOF
+
 cd ..
 echo "Data Mart Build Script Completed"
 echo ""
@@ -128,9 +132,20 @@ elif [ "$load_mode" == "3" ]; then
 fi
 
 sqlloader_end_time=$(date +%s)
-echo "Data Load Completed"
+echo "Facts Load Completed"
 sqlloader_load_duration=$(( sqlloader_end_time - sqlloader_start_time ))
 echo "Loading time: $sqlloader_load_duration seconds"
+
+echo ""
+echo "Dimension Data Extracting..."
+
+cd sql || exit 1
+sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA @3-load-dim.sql <<EOF
+${dba_pass}
+exit
+EOF
+
+echo "Dimension Extract Completed"
 
 sql -S ${datamart_admin_name}@${db_tns_datamart_pdb} <<EOF
 ${datamart_admin_pass}
@@ -143,9 +158,8 @@ BEGIN
 );
 END;
 /
-EXIT;
+EXIT
 EOF
-
 
 sql -S ${datamart_admin_name}@${db_tns_datamart_pdb} <<EOF
 ${datamart_admin_pass}
@@ -157,7 +171,16 @@ BEGIN
 );
 END;
 /
-EXIT;
+EXIT
+EOF
+
+echo "======================================"
+echo " Tests"
+echo "======================================"
+
+sql -S ${datamart_admin_name}@${db_tns_datamart_pdb} @4-tests.sql <<EOF
+${datamart_admin_pass}
+exit
 EOF
 
 echo "Installation Completed"
