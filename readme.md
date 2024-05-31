@@ -56,7 +56,7 @@ The project is currently only available on my localhost, so included some script
 
 ## Model
 
-![Diagram](assets/diagram.png)
+![Diagram](assets/diagram/diagram.png)
 *Figure 1: DWH Model*
 
 ### Database Objects & Names Explanation
@@ -127,5 +127,5 @@ ROK;MIESIAC;OW_NFZ;NIP_PODMIOTU;KOD_PRODUKTU_KONTRAKTOWEGO;KOD_PRODUKTU_JEDNOSTK
 ## Issues
 Gender code: 1 2 K M 0 9 
 
-## Key words
+#### Key words
 #nfz #data #etl #elt #bi #BuissnessInteligance #dataVisualisation #healthcare #dataengineering #analyst #pipeline #dataops #utplsql #liquid

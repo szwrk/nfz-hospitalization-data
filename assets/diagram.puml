@@ -12,57 +12,78 @@ package tbs_datamart_idx{}
 }
 
 package "Schema 'dm_nfzhosp' as NFZ Data Mart" as schema {
-package "Objects accessible by R_ANALYST role"<<Rectangle>>{
+package "Star schema (objects accessible by R_ANALYST role)"<<Rectangle>>{
 
 entity "F_HOSPITALIZATIONS" as f_hosps {
 }
-
 note right of f_hosps 
-  Synonym to MV_HOSPITALIZATIONS
+  Facts View. Contain facts with  degenerate abstract dimensions like gender, age category.
 end note
 
 entity "DIM_DATE" as dim_date{
- id: number
 }
 
 entity "DIM_NFZDICTS" as dim_nfzdicts{
- + id: number
- dict_code: varchar2
----
 }
 note bottom of dim_nfzdicts
 Dimension table for NFZ dictionaries
 like admission and discharge codes
 end note
 
-entity "DIM_INSTITUTION" as dim_insts{
- id: number
----
-}
-note bottom of dim_insts
-  Dimension table for institution
-end note
+entity "DIM_DEPARTMENTS" as DIM_DEPARTMENTS{
 }
 
-entity "HOSPITALIZACJE_CSV" as hosp_csv{
+
+entity "DIM_SERVICES" as DIM_SERVICES{
 }
 
+
+entity "DIM_CONTRACTS" as DIM_CONTRACTS{
+}
+
+
+entity "DIM_INSTITUTIONS" as DIM_INSTITUTIONS{
+}
+
+}
+' end of package
+
+package "Infrastructure objects"<<Rectangle>>{
+
+entity "HOSPITALIZACJE_CSV (Table)" as hosp_csv{
+}
 note bottom of hosp_csv
-  Table for loading raw csv data
+  Table for load raw csv data
 end note
 
-entity "MV_HOSPITALIZATIONS" as mv_hosp{
+entity "TRNSLTD_HOSPITALIZATIONS (View)" as TRNSLTD_HOSPITALIZATIONS{
+}
+note bottom of TRNSLTD_HOSPITALIZATIONS
+  HOSPITALIZACJE_CSV with translated labels
+end note
+
+entity "HOSPITALIZATIONS (Synonym)" as hospitalizations{
+}
+note bottom of hospitalizations
+   Synonym to TRNSLTD_HOSPITALIZATIONS
+end note
+
+
+entity "MV_HOSPITALIZATIONS (M.View)" as mv_hosp{
 }
 
 note bottom of mv_hosp
-  Materialized View for refresh data
+  Materialized View for process
+  and refresh data
 end note
 
 }
 }
 
-
 f_hosps }|--|| dim_date : "has a"
 f_hosps }|--|| dim_nfzdicts : "has a"
-f_hosps }|--|| dim_insts : "has a"
+f_hosps }|--|| DIM_SERVICES : "has a"
+f_hosps }|--|| DIM_CONTRACTS : "has a"
+f_hosps }|--|| DIM_DEPARTMENTS : "has a"
+f_hosps }|--|| DIM_INSTITUTIONS : "has a"
 @enduml
