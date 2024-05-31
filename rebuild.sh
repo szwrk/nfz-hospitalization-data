@@ -7,6 +7,11 @@ dba_name="sys"
 dev_name="c##jsmith"
 datamart_admin_name="sysdm"
 
+# load_mode=3
+# dba_pass="oracle"
+# dev_pass="oracle"
+# datamart_admin_pass="oracle"
+
 check_success() {
     if [ $? -ne 0 ]; then
         echo "ERROR: The previous command failed. Exiting."
@@ -42,6 +47,18 @@ instalattion_start_time=$(date +%s)
 echo ' '
 echo "Testing DB DBA connection..."
 sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA<<EOF
+${dba_pass}
+exit
+EOF
+
+
+echo ""
+echo "======================================"
+echo " Starting Drop Database Script"
+echo "======================================"
+cd sql || exit 1
+
+sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA @0-drop.sql<<EOF
 ${dba_pass}
 exit
 EOF
