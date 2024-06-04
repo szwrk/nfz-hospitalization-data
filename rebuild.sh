@@ -51,7 +51,6 @@ ${dba_pass}
 exit
 EOF
 
-
 echo ""
 echo "======================================"
 echo " Starting Drop Database Script"
