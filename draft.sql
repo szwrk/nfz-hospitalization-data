@@ -444,4 +444,39 @@ FROM (
    FROM (SELECT VALUE FROM (SELECT DISTINCT (F.nfz_contract_code) AS VALUE FROM f_hospitalizations F))
 )
 ;
--- CURRENT USER
+--total hospitalization
+--drop view dm_nfzhosp.rpt_totalhosp;
+create or replace view rpt_totalhosp as
+select to_char(
+      count(1),'999,999,999'
+   ) as all_hosp 
+from dm_nfzhosp.f_hospitalizations
+;
+select all_hosp 
+from RPT_TOTALHOSP
+;
+--cost 61550
+--WITH
+--w1(PERIOD, hosp_count) AS (
+--SELECT to_char(EXTRACT(YEAR FROM TO_DATE('2022-06-04','YYYY-MM-DD')) -1) AS PERIOD, COUNT(1) AS hosp_count
+--   FROM dm_nfzhosp.f_hospitalizations facts
+--   LEFT JOIN dm_nfzhosp.dim_date dimdate ON facts.dim_date_id = dimdate.id_date
+--   WHERE dimdate.YEAR = EXTRACT(YEAR FROM TO_DATE('2022-06-04','YYYY-MM-DD')) - 1 --assume that today NOW sysdate is '2022-06-04'
+--      AND dimdate.MONTH < EXTRACT(MONTH FROM TO_DATE('2022-06-04','YYYY-MM-DD'))  
+--)
+--,w2(PERIOD, hosp_count) AS (
+-- SELECT to_char(EXTRACT(YEAR FROM TO_DATE('2022-06-04','YYYY-MM-DD'))), COUNT(1)
+--   FROM dm_nfzhosp.f_hospitalizations facts
+--   LEFT JOIN dm_nfzhosp.dim_date dimdate ON facts.dim_date_id = dimdate.id_date
+--   WHERE dimdate.YEAR = EXTRACT(YEAR FROM TO_DATE('2022-06-04','YYYY-MM-DD'))
+--      AND dimdate.MONTH < EXTRACT(MONTH FROM TO_DATE('2022-06-04','YYYY-MM-DD'))
+--)
+--SELECT hosp_count - LAG (hosp_count, 1) OVER (ORDER BY hosp_count)
+--FROM (
+--   select PERIOD, hosp_count from w2
+--   union all
+--   select PERIOD, hosp_count from w1
+--)
+--where hosp_count is not null
+--cost 61549
+--;
