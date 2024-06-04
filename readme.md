@@ -1,9 +1,25 @@
 # Analyzing 21,194,349 Hospitalization Records from Poland's National Health Fund NFZ (2019-2022)
 **NFZ Hospitalization Data ETL & Visualization | A Low-Level Approach with SQL, Shell Scripts, SQLLoader and Apache Superset**
 
+## Quick Result Overview
+Let's start with a quick preview to grab your attention. I prepare few version of my reports. For more details, scroll down.
+- Modern approach as BI Visualisation with application side processing  
 
+![ApacheSuperset](assets/dashboard-superset.png)
+
+- Classic way as DB object with text output, but with SQLCl instead SQLplus
+
+```sql
+SQL> select total_hospitalization_in_dataset
+  2*  from rpt_totalhosp;
+  
+TOTAL_HOSPITALIZATION_IN_DATASET
+___________________________________
+21,194,349
+```
 
 ## Table of Contents
+- [Teaser](#teaser)
 - [About the Project](#about-the-project)
 - [Tech Stack](#tech-stack)
 - [About the Data](#about-the-data)
@@ -13,6 +29,7 @@
   - [Data Part](#data-part)
   - [Visualization Tool](#visualization-tool)
 - [Source Data Preview](#source-data-preview)
+
 
 ## About the Project
 This project is based on real NFZ data sourced from the open-data portal, dane.gov.pl.
@@ -52,11 +69,9 @@ The project is currently only available on my localhost, so included some script
 - Others 
    * PlantUml for diagrams
 
-
-
 ## Model
 
-![Diagram](assets/diagram/diagram.png)
+![Diagram](assets/diagram.png)
 *Figure 1: DWH Model*
 
 ### Database Objects & Names Explanation
@@ -66,25 +81,41 @@ The project is currently only available on my localhost, so included some script
 **Application schema**
 - dm_nfzhosp
 
-**Users**
-- sysdm: Data Mart Administrator
-- C##JDOE: Data Analyst
-- C##JSMITH: Database Developer
-- sys: Oracle Root User
-
 **Roles**
-- Role R_ENGINEER is used for develepers. That's have strong privilages. Granted user: C##JSMITH
+- R_ENGINEER is used for develepers. That's have strong privilages. Granted user: C##JSMITH
 - R_ANALYST is used for. Granted user: C##JDOE
 
+**Users**
+- sysdm: Data Mart Administrator
+- C##JDOE: Data Analyst 💁
+- C##JSMITH: Database Developer 🙋
+- sys: Oracle Root User
+
+**Synonyms**
+- F_HOSPITALIZATIONS
+
+**Tables**
+- DIM_CONTRACTS
+- DIM_DATE
+- DIM_DEPARTMENTS
+- DIM_INSTITUTIONS
+- DIM_NFZADMISSIONS 
+- DIM_NFZDISCHARGE
+- DIM_SERVICES
+- HOSPITALIZACJE_CSV
+- MV_HOSPITALIZATIONS
+
+**Views**
+- RPT_TOTALHOSP
+- V_HOSPITALIZATIONS
+- V_TRNSLTD_HOSPITALIZATIONS
 
 ### Domain dictionaries
 The data contains some foreign keys pointing to static dictionaries:
-- dim_discharge_mode_dict 
-- dim_admission_mode_dict (both as general dictionary, no-changing dimension)
-- dim_nfz_dept_dict (inline yet as CTE)
-- dim_institution (#todo)
 
-The dictionary source for Polish HL7 implementations includes:
+
+
+**The dictionary source for Polish HL7 implementations includes**
 - discharge modes https://www.cez.gov.pl/HL7POL-1.3.2/plcda-html-1.3.2/plcda-html/voc-2.16.840.1.113883.3.4424.13.11.36-2015-10-26T000000.html
 
 ## Installation
