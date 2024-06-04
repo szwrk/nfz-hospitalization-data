@@ -15,7 +15,7 @@ CREATE TABLE dm_nfzhosp.hospitalizacje_csv(
 , przedzial_dlugosci_trwania_hospitalizacji VARCHAR2(26 BYTE) 
 , liczba_hospitalizacji VARCHAR2(26 BYTE) 
 ) 
-LOGGING 
+NOLOGGING 
 TABLESPACE tbs_datamart 
 ;
 
@@ -23,7 +23,7 @@ COMMENT ON TABLE hospitalizacje_csv
 IS 'CSV raw data from public source hospitalization jgp 2019-2021 + 2022 - data.gov.pl)'
 ;
 
-CREATE VIEW trnsltd_hospitalizations AS (
+CREATE VIEW v_trnsltd_hospitalizations AS (
    SELECT
       rok YEAR
       ,miesiac MONTH
@@ -38,14 +38,19 @@ CREATE VIEW trnsltd_hospitalizations AS (
       ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
       ,liczba_hospitalizacji hospitalization_count
    FROM dm_nfzhosp.hospitalizacje_csv
-   ) 
+   )
 ;
-   
-CREATE SYNONYM hospitalizations FOR dm_nfzhosp.trnsltd_hospitalizations;   
 
 /*Dimension - static */
 --Dimension NFZ Departements Regions - static
-CREATE TABLE dm_nfzhosp.dim_departments AS 
+CREATE TABLE dm_nfzhosp.dim_departments(
+   id_department PRIMARY KEY,
+    region_name NOT NULL, 
+    nfz_abbr  NOT NULL
+    )
+NOLOGGING 
+TABLESPACE tbs_datamart 
+AS 
 WITH w_nfz_dept_dict(id_department, region_name, nfz_abbr) AS (
    SELECT 1 ,'Dolnośląski' , 'DŚ' UNION ALL
    SELECT 2, 'Kujawsko-Pomorski', 'KP'  UNION ALL
@@ -72,7 +77,12 @@ WITH w_nfz_dept_dict(id_department, region_name, nfz_abbr) AS (
 ;
 
 --Dimension NFZ Dictionaries - static
-CREATE TABLE dm_nfzhosp.dim_nfzdicts AS 
+CREATE TABLE dm_nfzhosp.dim_nfzdischarge(
+   id_position PRIMARY KEY
+   ,value NOT NULL) 
+NOLOGGING 
+TABLESPACE tbs_datamart 
+AS 
 WITH w_discharge_mode_dict(id_position, value) AS (
    SELECT 1,'zakończenie procesu terapeutycznego lub diagnostycznego' UNION ALL
    SELECT 2,'skierowanie do dalszego leczenia w lecznictwie ambulatoryjnym' UNION ALL
@@ -85,7 +95,16 @@ WITH w_discharge_mode_dict(id_position, value) AS (
    SELECT 10 ,'osoba leczona, przyjęta w trybie oznaczonym kodem "9" lub "10", która samowolnie opuściła podmiot leczniczy' UNION ALL
    SELECT 11 ,'wypisanie na podstawie art. 46 albo 47 ustawy z dnia 22 listopada 2013 r.'
  )
- ,w_admission_mode_dict(id_position, value) AS (
+SELECT D.id_position, D.value FROM w_discharge_mode_dict D
+;
+
+CREATE TABLE dm_nfzhosp.dim_nfzadmissions(
+   id_position PRIMARY KEY
+   ,value NOT NULL)
+NOLOGGING 
+TABLESPACE tbs_datamart 
+AS
+WITH w_admission_mode_dict (id_position, value) AS (
   SELECT 1, 'Przyjęcie planowe' UNION ALL
   SELECT 2, 'Przyjęcie w trybie nagłym w wyniku przekazania przez zespół ratownictwa medycznego' UNION ALL
   SELECT 3, 'Przyjęcie w trybie nagłym – inne przypadki' UNION ALL
@@ -98,13 +117,15 @@ WITH w_discharge_mode_dict(id_position, value) AS (
   SELECT 10, 'Przyjęcie przymusowe' UNION ALL
   SELECT 11, 'Przyjęcie na podstawie karty diagnostyki i leczenia onkologicznego'
 )
-SELECT 'DISM' AS dict_code, D.id_position, D.value FROM w_discharge_mode_dict D
-  UNION ALL
-SELECT 'ADMM', A.id_position, A.value FROM w_admission_mode_dict A
-;
+SELECT A.id_position, A.value FROM w_admission_mode_dict A;
 
 --Dimension Dates - static
-CREATE TABLE dm_nfzhosp.dim_date AS
+CREATE TABLE dm_nfzhosp.dim_date(
+   id_date PRIMARY KEY
+   ,year NOT NULL
+   ,month NOT NULL) 
+NOLOGGING 
+TABLESPACE tbs_datamart AS
 SELECT
   CAST(ROWNUM AS NUMBER(3)) AS id_date
    ,TO_NUMBER(
@@ -119,25 +140,21 @@ CONNECT BY LEVEL <= months_between(TO_DATE('2030-01-01','YYYY-MM-DD'),TO_DATE('2
 /**/
 --Dimension NFZ Contracts
 CREATE TABLE dm_nfzhosp.dim_contracts (
-   id_contract NUMBER(4)
-   ,contract_code VARCHAR2(100)
+   id_contract NUMBER(4) PRIMARY KEY
+   ,contract_code VARCHAR2(100) NOT NULL
 );
 
 --Dimension NFZ Services
 CREATE TABLE dm_nfzhosp.dim_services (
-    id_service NUMBER(5),
-    service_code VARCHAR2(100) -- Adjust the length as per your data
+    id_service NUMBER(5) PRIMARY KEY,
+    service_code VARCHAR2(100) NOT NULL
 );
 
 --Dimension NFZ Institution
 CREATE TABLE dm_nfzhosp.dim_institutions (
-    id_institution NUMBER(5),
-    nip_code VARCHAR2(100) -- Adjust the length as per your data
+    id_institution NUMBER(5) PRIMARY KEY,
+    nip_code VARCHAR2(100) NOT NULL
 );
-
--- User views
-CREATE VIEW dim_nfz_discharges AS SELECT * FROM dm_nfzhosp.dim_nfzdicts D WHERE D.dict_code = 'DISM';
-CREATE VIEW dim_nfz_admissions AS SELECT * FROM dm_nfzhosp.dim_nfzdicts D WHERE D.dict_code = 'ADMM';
 
 -- Materialized view for refreshing data
 CREATE MATERIALIZED VIEW dm_nfzhosp.mv_hospitalizations AS
@@ -147,6 +164,8 @@ SELECT
  ,dimcontr.id_contract AS dim_contract_id
  ,dimdept.id_department dim_department_id
  ,dimserv.id_service dim_service_id
+ ,hosp.admission_code
+ ,hosp.discharge_code
  ,CASE 
    WHEN TRIM(hosp.patient_gender) IN ('1', 'K') THEN 'F'
    WHEN TRIM(hosp.patient_gender) IN ('2', 'M') THEN 'M'
@@ -161,7 +180,7 @@ SELECT
     WHEN '1-2 dni' THEN '1-2'
    ELSE '-' 
    END AS hosp_length_in_day_category 
-FROM trnsltd_hospitalizations hosp
+FROM v_trnsltd_hospitalizations hosp
    LEFT JOIN dm_nfzhosp.dim_date dimdate ON dimdate.YEAR = hosp.YEAR AND dimdate.MONTH = hosp.MONTH
    LEFT JOIN dm_nfzhosp.dim_departments dimdept ON dimdept.id_department = hosp.department_code
    LEFT JOIN dm_nfzhosp.dim_contracts dimcontr ON dimcontr.contract_code = hosp.contract_code
@@ -177,57 +196,78 @@ Transforms: internationalization, NFZ departments codes, resolving dictionary fo
 ;
 
 --Create facts view for users
-CREATE VIEW f_hospitalizations AS 
+CREATE VIEW v_hospitalizations AS 
 SELECT *
-FROM trnsltd_hospitalizations hosp
+FROM mv_hospitalizations hosp
 ;
+
+CREATE SYNONYM f_hospitalizations FOR dm_nfzhosp.v_hospitalizations;
 
 CONNECT sysdm/oracle@192.168.0.51:1521/datamart;
 -- for direct data loading 
 GRANT ALL ON dm_nfzhosp.hospitalizacje_csv TO dm_engineer;
-GRANT RESOURCE TO dm_engineer;
+-- GRANT RESOURCE TO dm_engineer;
 -- GRANT LOCK TABLE ON dm_nfzhosp.hospitalizacje_csv TO dm_engineer;
 -- GRANT DIRECT PATH TO dm_engineer;
 
 -- access users to dedicated layer
 GRANT SELECT ON dm_nfzhosp.f_hospitalizations TO dm_analyst;
-GRANT SELECT ON dm_nfzhosp.dim_nfz_discharges TO dm_analyst;
-GRANT SELECT ON dm_nfzhosp.dim_nfz_admissions TO dm_analyst;
+GRANT SELECT ON dm_nfzhosp.dim_nfzdischarge TO dm_analyst;
+GRANT SELECT ON dm_nfzhosp.dim_nfzadmissions TO dm_analyst;
 GRANT SELECT ON dm_nfzhosp.dim_date TO dm_analyst;
+GRANT SELECT ON dm_nfzhosp.dim_contracts TO dm_analyst;
+GRANT SELECT ON dm_nfzhosp.dim_departments TO dm_analyst;
+GRANT SELECT ON dm_nfzhosp.dim_services TO dm_analyst;
+GRANT SELECT ON dm_nfzhosp.dim_institutions TO dm_analyst;
+
+--direct grants for build own reports
+GRANT SELECT ON dm_nfzhosp.f_hospitalizations TO c##jdoe;
+GRANT SELECT ON dm_nfzhosp.dim_nfzdischarge TO c##jdoe;
+GRANT SELECT ON dm_nfzhosp.dim_nfzadmissions TO c##jdoe;
+GRANT SELECT ON dm_nfzhosp.dim_date TO c##jdoe;
+GRANT SELECT ON dm_nfzhosp.dim_contracts TO c##jdoe;
+GRANT SELECT ON dm_nfzhosp.dim_departments TO c##jdoe;
+GRANT SELECT ON dm_nfzhosp.dim_services TO c##jdoe;
+GRANT SELECT ON dm_nfzhosp.dim_institutions TO c##jdoe;
 
 CONNECT sysdm/oracle@192.168.0.51:1521/datamart;
---Primary keys
-ALTER TABLE dm_nfzhosp.dim_departments ADD CONSTRAINT pk_dim_departments PRIMARY KEY (id_department);
-ALTER TABLE dm_nfzhosp.dim_nfzdicts ADD CONSTRAINT pk_dim_nfzdicts PRIMARY KEY (dict_code, id_position);
-ALTER TABLE dm_nfzhosp.dim_date ADD CONSTRAINT pk_dim_date PRIMARY KEY (id_date);
-ALTER TABLE dm_nfzhosp.dim_contracts ADD CONSTRAINT pk_dim_contracts PRIMARY KEY (id_contract);
-ALTER TABLE dm_nfzhosp.dim_services ADD CONSTRAINT pk_dim_services PRIMARY KEY (id_service);
-ALTER TABLE dm_nfzhosp.dim_institutions ADD CONSTRAINT pk_dim_institutions PRIMARY KEY (id_institution);
+
 --Foreign keys
+ALTER TABLE dm_nfzhosp.mv_hospitalizations
+ADD CONSTRAINT fk_discharge_code
+FOREIGN KEY (discharge_code)
+REFERENCES dm_nfzhosp.dim_nfzdischarge (id_position)
+;
+ALTER TABLE dm_nfzhosp.mv_hospitalizations
+ADD CONSTRAINT fk_admission_code
+FOREIGN KEY (admission_code)
+REFERENCES dm_nfzhosp.dim_nfzadmissions
+;
 ALTER TABLE dm_nfzhosp.mv_hospitalizations
 ADD CONSTRAINT fk_mv_hosp_dim_date
 FOREIGN KEY (dim_date_id)
-REFERENCES dm_nfzhosp.dim_date(id_date);
-
+REFERENCES dm_nfzhosp.dim_date(id_date)
+;
 ALTER TABLE dm_nfzhosp.mv_hospitalizations
 ADD CONSTRAINT fk_mv_hosp_dim_institutions
 FOREIGN KEY (dim_institution_id)
-REFERENCES dm_nfzhosp.dim_institutions(id_institution);
-
+REFERENCES dm_nfzhosp.dim_institutions(id_institution)
+;
 ALTER TABLE dm_nfzhosp.mv_hospitalizations
 ADD CONSTRAINT fk_mv_hosp_dim_contracts
 FOREIGN KEY (dim_contract_id)
-REFERENCES dm_nfzhosp.dim_contracts(id_contract);
-
+REFERENCES dm_nfzhosp.dim_contracts(id_contract)
+;
 ALTER TABLE dm_nfzhosp.mv_hospitalizations
 ADD CONSTRAINT fk_mv_hosp_dim_departments
 FOREIGN KEY (dim_department_id)
-REFERENCES dm_nfzhosp.dim_departments(id_department);
-
+REFERENCES dm_nfzhosp.dim_departments(id_department)
+;
 ALTER TABLE dm_nfzhosp.mv_hospitalizations
 ADD CONSTRAINT fk_mv_hosp_dim_services
 FOREIGN KEY (dim_service_id)
-REFERENCES dm_nfzhosp.dim_services(id_service);
+REFERENCES dm_nfzhosp.dim_services(id_service)
+;
 
 CONNECT c##jsmith/oracle@192.168.0.51:1521/datamart;
 -- Test data engineer account
@@ -235,13 +275,12 @@ SELECT COUNT(1) AS eng_mview_test
 FROM dm_nfzhosp.mv_hospitalizations
 ;
 SELECT COUNT(1) AS eng_fact_test
-FROM dm_nfzhosp.f_hospitalizations
+FROM dm_nfzhosp.v_hospitalizations
 ;
 -- Test analyst account
 CONNECT c##jdoe/oracle@192.168.0.51:1521/datamart;
-SET SERVEROUTPUT ON
 SELECT COUNT(1) AS analyst_connection_test
-FROM dm_nfzhosp.f_hospitalizations
+FROM dm_nfzhosp.v_hospitalizations
 
 EXIT;
 

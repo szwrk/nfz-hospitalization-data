@@ -7,7 +7,7 @@ SELECT
     nip_code
 FROM (
     SELECT DISTINCT nip_code
-    FROM dm_nfzhosp.TRNSLTD_HOSPITALIZATIONS
+    FROM dm_nfzhosp.v_trnsltd_hospitalizations
 ) sq;
 
 INSERT INTO dm_nfzhosp.dim_services (id_service, service_code)
@@ -16,7 +16,7 @@ SELECT
     service_code
 FROM (
     SELECT DISTINCT service_code
-    FROM dm_nfzhosp.TRNSLTD_HOSPITALIZATIONS
+    FROM dm_nfzhosp.v_trnsltd_hospitalizations
 ) sq;
 
 INSERT INTO dm_nfzhosp.dim_contracts
@@ -25,7 +25,7 @@ SELECT
    ROWNUM AS id_contract
    ,sq.contract_code
 FROM (
-   SELECT contract_code FROM (SELECT DISTINCT (contract_code) AS contract_code FROM dm_nfzhosp.TRNSLTD_HOSPITALIZATIONS)
+   SELECT contract_code FROM (SELECT DISTINCT (contract_code) AS contract_code FROM dm_nfzhosp.v_trnsltd_hospitalizations)
    ) sq
 ;
 EXIT;
