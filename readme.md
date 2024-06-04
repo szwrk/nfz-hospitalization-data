@@ -1,15 +1,27 @@
-# Analyzing 21,194,349 Hospitalization Records from Poland's National Health Fund NFZ (2019-2022)
-**NFZ Hospitalization Data ETL & Visualization | A Low-Level Approach with SQL, Shell Scripts, SQLLoader and Apache Superset**
+# Analyzing 21,194,349 Hospitalization Records from Poland's National Health Fund (NFZ)
+## **Comprehensive  ETL, Data Warehousing, Processing & Visualization Project**
+## A Low-Level Approach with SQL, Shell Scripts, SQLLoader and Apache Superset
 
-## Quick Result Overview
-Let's start with a quick preview to grab your attention. I prepare few version of my reports. For more details, scroll down.
-- Modern approach as BI Visualisation with application side processing  
+```keywords
+#batch #dwh #datamart #nfz #data #etl #bi #visualisation #healthcare #dataengineering
+#analyst #pipeline #dataops #batch #shell #oracle #apachesuperset #sqlcl #docker #pluggabledb
+```
+---
+## Sneak Peek
+Let's start with a quick preview to grab your attention. I've prepared comprehensive cross-sectional descriptions and installers (shell & SQL scripts) for various versions of my reports. Of course, you don't have to go through the installation process. For more details, simply scroll down.
+
+Here are two dashboard options available in my project:
+
+- **Modern approach**
 
 ![ApacheSuperset](assets/dashboard-superset.png)
 
-- Classic way as DB object with text output, but with SQLCl instead SQLplus
+*Apache Superset: BI Visualisation with application side processing (in progress!)*
 
-```sql
+- **Classic approach**
+
+
+```
 SQL> select total_hospitalization_in_dataset
   2*  from rpt_totalhosp;
   
@@ -18,20 +30,11 @@ ___________________________________
 21,194,349
 ```
 
-## Table of Contents
-- [Teaser](#teaser)
-- [About the Project](#about-the-project)
-- [Tech Stack](#tech-stack)
-- [About the Data](#about-the-data)
-  - [Domain Dictionaries](#domain-dictionaries)
-  - [Model](#model)
-- [Installation](#installation)
-  - [Data Part](#data-part)
-  - [Visualization Tool](#visualization-tool)
-- [Source Data Preview](#source-data-preview)
+*SQlCl: DB Object with Text Output*
 
-
-## About the Project
+---
+# Start
+## Introduction
 This project is based on real NFZ data sourced from the open-data portal, dane.gov.pl.
 The dataset comprises all hospitalizations covered by the NFZ (National Health Fund of Poland) in 2019-2022 *.
 
@@ -54,71 +57,104 @@ My objective is to prepare and process this data for visualization purposes, inc
 
 The project is currently only available on my localhost, so included some scripts and documentation images for the initial version.
 
-- Apache Superset for visualisation
-- Oracle SQL for cleaning data
-- VirtualBox, network bridged adapter. VMs:
-   * VM 1: Oracle Linux with DB 21
-   * VM 2: Centos, Docker, Apache Superset container with cx_oracle connector
-- MINGW Bash for shell scripting
-- SqlLoader
-
-- IDE:
-   * SQLDeveloper 23 for DBA tasks and queries
-   * Visual Studio Code with new Oracle plugin for new experience :)
-   * SQLPlus & SQLCli
-- Others 
-   * PlantUml for diagrams
-
-## Model
-
-![Diagram](assets/diagram.png)
-*Figure 1: DWH Model*
-
-### Database Objects & Names Explanation
-**Pluggable Database (PDB)**
-- datamart
-
-**Application schema**
-- dm_nfzhosp
-
-**Roles**
-- R_ENGINEER is used for develepers. That's have strong privilages. Granted user: C##JSMITH
-- R_ANALYST is used for. Granted user: C##JDOE
-
-**Users**
-- sysdm: Data Mart Administrator
-- C##JDOE: Data Analyst 💁
-- C##JSMITH: Database Developer 🙋
-- sys: Oracle Root User
-
-**Synonyms**
-- F_HOSPITALIZATIONS
-
-**Tables**
-- DIM_CONTRACTS
-- DIM_DATE
-- DIM_DEPARTMENTS
-- DIM_INSTITUTIONS
-- DIM_NFZADMISSIONS 
-- DIM_NFZDISCHARGE
-- DIM_SERVICES
-- HOSPITALIZACJE_CSV
-- MV_HOSPITALIZATIONS
-
-**Views**
-- RPT_TOTALHOSP
-- V_HOSPITALIZATIONS
-- V_TRNSLTD_HOSPITALIZATIONS
-
+| Tool/Software           | Description                           |
+|-------------------------|---------------------------------------|
+| **Visualization**       |                                       |
+| Apache Superset        | Visualization tool                    |
+| **Data Cleaning**       |                                       |
+| Oracle SQL             | Data cleaning and manipulation        |
+| **Virtual Machines**    |                                       |
+| VM 1                    | Oracle Linux with DB 21               |
+| VM 2                    | Centos, Docker, Apache Superset container with cx_oracle connector |
+| **Shell Scripting**     |                                       |
+| MINGW Bash              | Shell scripting                       |
+| **Data Loading**        |                                       |
+| SqlLoader               | Data loading                          |
+| **IDE**                 |                                       |
+| SQLDeveloper 23         | IDE for DBA tasks and queries         |
+| Visual Studio Code      | IDE with new Oracle plugin            |
+| **Database Tools**      |                                       |
+| SQLPlus & SQLCli        | Database command-line interface      |
+| **Others**              |                                       |
+| PlantUml                | Tool for diagrams                     |
+| GIT                     | Version control system                |
+ 
+## Data source
+### NFZ source Data preview (CSV)
+ROK;MIESIAC;OW_NFZ;NIP_PODMIOTU;KOD_PRODUKTU_KONTRAKTOWEGO;KOD_PRODUKTU_JEDNOSTKOWEGO;KOD_TRYBU_PRZYJECIA;KOD_TRYBU_WYPISU;PLEC_PACJENTA;GRUPA_WIEKOWA_PACJENTA;PRZEDZIAL_DLUGOSCI_TRWANIA_HOSPITALIZACJI;LICZBA_HOSPITALIZACJI
+2022;4;"07";"1132866688";"03.4580.991.02";"5.51.01.0008013";6;2;"K";"65 i wiecej";"6 i wie™cej dni";"<5"
+2022;8;"02";"5562239217";"03.4220.030.02";"5.51.01.0001087";3;2;"K";"45-64";"6 i wiecej dni";"<5"
+2022;11;"03";"9462146139";"03.4580.991.02";"5.51.01.0008015";6;2;"K";"65 i wiecej";"6 i wiecej dni";"<5"
+2022;9;"15";"7842008454";"03.4450.040.02";"5.51.01.0012014";3;2;"K";"65 i wiecej";"0 dni";"<5"
 ### Domain dictionaries
 The data contains some foreign keys pointing to static dictionaries:
 
-
-
 **The dictionary source for Polish HL7 implementations includes**
 - discharge modes https://www.cez.gov.pl/HL7POL-1.3.2/plcda-html-1.3.2/plcda-html/voc-2.16.840.1.113883.3.4424.13.11.36-2015-10-26T000000.html
+- admision modes
+
+## My DWH DB model
+I had to transform the source file into a star schema model for that data mart...
+
+![Diagram](assets/diagram/diagram.png)
+*Figure 1: DWH Model*
+
+### Database Objects & Names Explanation
+As a DBA, I handle database creation, structure definition, user management, and permissions...
+
+### DB Instance
+
+| Object Type                | Object Name                        | Description                           |
+|----------------------------|------------------------------------|---------------------------------------|
+| **Pluggable Database (PDB)**| datamart                           |                                       |
+| **Application schema**     | dm_nfzhosp                         |    
+
+### Roles
+
+| Role         | Description                           |
+|--------------|---------------------------------------|
+| R_ENGINEER   | Used for developers with strong privileges.   |
+| R_ANALYST    | Used for analysts.                             |
+
+### Users
+
+| User       | Description              |
+|------------|--------------------------|
+| sysdm      | Data Mart Administrator  |
+| C##JDOE    | Data Analyst 💁          |
+| C##JSMITH  | Database Developer 🙋    |
+| sys        | Oracle Root User         |
+
+### Synonyms
+
+| Synonym             | Description            |
+|---------------------|------------------------|
+| F_HOSPITALIZATIONS  |                        |
+
+### Tables
+
+| Table               | Description            |
+|---------------------|------------------------|
+| DIM_CONTRACTS       |                        |
+| DIM_DATE            |                        |
+| DIM_DEPARTMENTS     |                        |
+| DIM_INSTITUTIONS    |                        |
+| DIM_NFZADMISSIONS   |                        |
+| DIM_NFZDISCHARGE    |                        |
+| DIM_SERVICES        |                        |
+| HOSPITALIZACJE_CSV  |                        |
+| MV_HOSPITALIZATIONS |                        |
+
+### Views
+
+| View                 | Description            |
+|----------------------|------------------------|
+| RPT_TOTALHOSP       |                        |
+| V_HOSPITALIZATIONS  |                        |
+| V_TRNSLTD_HOSPITALIZATIONS |                   |
 
 ## Installation
+I've prepared some bash and SQL scripts to create database, structures and objects and automate the installation process. You can use either install.sh or rebuild.sh to get started.
 
 **Tool**
 - Set up default coding to UTF-8 (SQLDeveloper, Sublime, DB instance)
@@ -131,7 +167,7 @@ The data contains some foreign keys pointing to static dictionaries:
 
 ![Installation](assets/install.gif)
 
-*Figure 1: Demonstration of the installation process (gif animations)*
+*Figure 1: Demonstration of the script execution process (gif animations)*
 
 **Visualization Tool:**
 
@@ -140,23 +176,16 @@ The data contains some foreign keys pointing to static dictionaries:
 `url
 oracle+cx_oracle://c##jdoe:oracle@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.0.51)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=datamart)))
 `
-- Set up charts.
+- Set up charts (but you can also use simple text-based version of reports)
 
-### Source Data preview
-ROK;MIESIAC;OW_NFZ;NIP_PODMIOTU;KOD_PRODUKTU_KONTRAKTOWEGO;KOD_PRODUKTU_JEDNOSTKOWEGO;KOD_TRYBU_PRZYJECIA;KOD_TRYBU_WYPISU;PLEC_PACJENTA;GRUPA_WIEKOWA_PACJENTA;PRZEDZIAL_DLUGOSCI_TRWANIA_HOSPITALIZACJI;LICZBA_HOSPITALIZACJI
-2022;4;"07";"1132866688";"03.4580.991.02";"5.51.01.0008013";6;2;"K";"65 i wiecej";"6 i wie™cej dni";"<5"
-2022;8;"02";"5562239217";"03.4220.030.02";"5.51.01.0001087";3;2;"K";"45-64";"6 i wiecej dni";"<5"
-2022;11;"03";"9462146139";"03.4580.991.02";"5.51.01.0008015";6;2;"K";"65 i wiecej";"6 i wiecej dni";"<5"
-2022;9;"15";"7842008454";"03.4450.040.02";"5.51.01.0012014";3;2;"K";"65 i wiecej";"0 dni";"<5"
-2022;4;"13";"6572195982";"03.4500.030.02";"5.51.01.0006109";6;2;"K";"65 i wiecej";"3-5 dni";"<5"
+## Dashboard & Reports Results
+Of course you don't have to go through the installation process. Simply open the text-based dashboard or view the visualization screenshots. However, if you're a professional user, you can review my analysis queries (along with all other scripts) by navigating to the sql/ GitHub directory.
 
-------------
-## My notes
-- top 5 of disase by age group
-- increase in hospitalization count for each age group
-- increase in hospitalization length for each age group
-## Issues
-Gender code: 1 2 K M 0 9 
+**HR / Regular user**
+- [View the text-based dashboard](dashboard-as-text.md)
+- [View the Apache Superset dashboard](dashboard-superset.md)
 
-#### Key words
-#nfz #data #etl #elt #bi #BuissnessInteligance #dataVisualisation #healthcare #dataengineering #analyst #pipeline #dataops #utplsql #liquid
+**IT professional user**
+- [Review my queries in sql/5-create-reports-as-analyst.sql](sql/5-create-reports-as-analyst.sql)
+
+---
