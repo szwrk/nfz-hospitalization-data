@@ -66,9 +66,9 @@ SELECT
 FROM
    rpt_yearly_hosps_comp;
 
---Waterfall chart
+--Monthly Hospitalization Comparison - Waterfall chart
 --rpt_hosps_monthly_diffs
---january is initial value, not diff
+--tip: january is initial value, not diff
 ALTER SESSION SET current_schema = c##jdoe;
 CREATE OR REPLACE VIEW c##jdoe.rpt_hosps_monthly_diffs AS
 WITH monthly_counts AS (
@@ -104,10 +104,8 @@ FROM
 --   dd.year = 2022
 GROUP BY
    dd.month
-   
-   ;
+;
 /
-
 select period, month_count, diff_prev_month
 from C##JDOE.RPT_HOSPS_MONTHLY_DIFFS
 ;
