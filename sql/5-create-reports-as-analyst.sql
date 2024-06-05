@@ -70,31 +70,29 @@ FROM
 --rpt_hosps_monthly_diffs
 --january is initial value, not diff
 ALTER SESSION SET current_schema = c##jdoe;
-CREATE VIEW rpt_hosps_monthly_diffs AS
+CREATE OR REPLACE VIEW c##jdoe.rpt_hosps_monthly_diffs AS
 WITH monthly_counts AS (
    SELECT
       dd.year  AS year,
       dd.month AS month,
       COUNT(1) month_count
    FROM 
-      dm_hospnfz.f_hospitalizations f
-      JOIN dm_hospnfz.dim_date dd ON f.dim_date_id = dd.id_date
-   WHERE
-      dd.year = 2022
+      dm_nfzhosp.f_hospitalizations f JOIN dm_nfzhosp.dim_date dd ON f.dim_date_id = dd.id_date
    GROUP BY
       dd.year,
       dd.month
 )
 SELECT
    year || '/' || lpad(month, 2, '0') AS period,
+   year as year,
    month_count,
-   nvl(month_count - LAG(month_count, 1) OVER(partition by year ORDER BY year, month),month_count) AS diff_with_prev_month
+   nvl(month_count - LAG(month_count, 1) OVER(partition by year ORDER BY year, month),month_count) AS diff_prev_month
 FROM
    monthly_counts mc
 ORDER BY
    year,
    month ASC
-   ;
+;
 
 SELECT
    dd.month,
@@ -102,9 +100,17 @@ SELECT
 FROM
         f_hospitalizations f
    JOIN dim_date dd ON f.dim_date_id = dd.id_date
-WHERE
-   dd.year = 2022
+--WHERE
+--   dd.year = 2022
 GROUP BY
    dd.month
+   
+   ;
+/
+
+select period, month_count, diff_prev_month
+from C##JDOE.RPT_HOSPS_MONTHLY_DIFFS
+;
+/
 
 EXIT;
