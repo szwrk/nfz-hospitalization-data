@@ -1,5 +1,6 @@
-# Ignore my local big source csv dir
-/data-full/
+# Ignore my local large source csv
+nfz_hospitalizations_2019-2021.csv
+nfz_hospitalizations_2022.csv
 /temp/
 *.bad
 *.BAD
