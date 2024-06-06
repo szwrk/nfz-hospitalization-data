@@ -1,27 +1,27 @@
 # Analyzing 21,194,349 Hospitalization Records from Poland's National Health Fund (NFZ)
-## **Comprehensive  ETL, Data Warehousing, Processing & Visualization Project**
-## A Low-Level Approach with SQL, Shell Scripts, SQLLoader and Apache Superset
+**Comprehensive  ETL, Data Warehousing, Processing & Visualization Project**
+
+ _A Low-Level Approach with SQL, Shell Scripts, SQLLoader and Apache Superset_
 
 ```keywords
 #batch #dwh #datamart #nfz #data #etl #bi #visualisation #healthcare #dataengineering
 #analyst #pipeline #dataops #batch #shell #oracle #apachesuperset #sqlcl #docker #pluggabledb
 ```
+
+**Projects status:** *in progress*
+
 ---
 ## Sneak Peek
-Let's start with a quick preview to grab your attention. I've prepared comprehensive cross-sectional descriptions and installers (shell & SQL scripts) for various versions of my reports. Of course, you don't have to go through the installation process. For more details, simply scroll down.
+Let's start with a quick preview to grab your attention. I've prepared comprehensive cross-sectional descriptions and installers (shell & SQL scripts) for various versions of my reports. Of course, you don't have to go through the installation process. For more details, simply scroll down. 
 
-Here are two dashboard options available in my project:
+Here are two dashboard options that showcase the results of my process:
 
-- **Modern approach**
+- [**BI Dashboard** - Modern Approach](_dashboard-preview/dashboard-superset.md)
+ ![**BI Dashboard**](assets/as-dashboard.png)
+*Example 1: Apache Superset: BI Visualisation with application side processing (in progress!)*
 
-![ApacheSuperset](assets/dashboard-superset.png)
-
-*Apache Superset: BI Visualisation with application side processing (in progress!)*
-
-- **Classic approach**
-
-
-```
+- [**Command Line Report** - Classic Approach](_dashboard-preview/dashboard-as-text.md)
+```sql
 SQL> select total_hospitalization_in_dataset
   2*  from rpt_totalhosp;
   
@@ -30,15 +30,17 @@ ___________________________________
 21,194,349
 ```
 
-*SQlCl: DB Object with Text Output*
+*Example 2: SQlCl: DB Object with Text Output*
+
+and more...
 
 ---
-# Start
 ## Introduction
+### Used data
 This project is based on real NFZ data sourced from the open-data portal, dane.gov.pl.
-The dataset comprises all hospitalizations covered by the NFZ (National Health Fund of Poland) in 2019-2022 *.
+The dataset comprises all hospitalizations covered by the NFZ (National Health Fund of Poland) in 2017-2022 *.
 
-- [Dane dotyczące hospitalizacji rozliczonych JGP w latach 2019-2021 ](https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/45162) (containt hospitalizations start with 2017, 2018)
+- [Dane dotyczące hospitalizacji rozliczonych JGP w latach 2019-2021 ](https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/45162) (contains hospitalizations 2017, 2018)
 - [Dane dotyczące hospitalizacji rozliczonych JGP w latach 2022 ](https://dane.gov.pl/pl/dataset/3009,dane-dotyczace-hospitalizacji-rozliczonych-jgp-w-l/resource/54046)
 
 The dataset comprises over 20 million records, with each record representing an individual patient's hospitalization data.
@@ -50,12 +52,23 @@ It's based on the public goverment repositories hub named data.gov.pl.
 Used repository is not bad quality, but I saw small differences between files. I want to make some improvements, create DWH star schema, materialized view as fact table, dimensions etc...
 I will clean and process the data to visualize it with Apache Superset.
 
-## Tech stack
+### Project Objectives
+
+I created a complete process to:
+
+- Prepare the test environment and database
+- Automate the extract, transform, load (precisely ELT) data process
+- Create data mart, load data to facts&dimensions tables
+- Refresh Materialized Views, Gather schema stats
+- Create user reports views, analyze the data
+
+You can use my installer shell script. 
+That site contains screenshots of any output results.
+
+## Tech stack 
 This repository showcases my Data Engineering project, highlighting my diverse data-related skills. 
 It includes database administration, data warehousing, and ETL development tasks.
 My objective is to prepare and process this data for visualization purposes, including the creation of charts and dashboards. I aim to learn modern data visualization BI tool.
-
-The project is currently only available on my localhost, so included some scripts and documentation images for the initial version.
 
 | Tool/Software           | Description                           |
 |-------------------------|---------------------------------------|
@@ -100,92 +113,24 @@ I had to transform the source file into a star schema model for that data mart..
 *Figure 1: DWH Model*
 
 ### Database Objects & Names Explanation
-As a DBA, I handle database creation, structure definition, user management, and permissions...
+As a DBA, I handle SQL scripts, database creation, structure definition, user management, and permissions.
 
-### DB Instance
-
-| Object Type                | Object Name                        | Description                           |
-|----------------------------|------------------------------------|---------------------------------------|
-| **Pluggable Database (PDB)**| datamart                           |                                       |
-| **Application schema**     | dm_nfzhosp                         |    
-
-### Roles
-
-| Role         | Description                           |
-|--------------|---------------------------------------|
-| R_ENGINEER   | Used for developers with strong privileges.   |
-| R_ANALYST    | Used for analysts.                             |
-
-### Users
-
-| User       | Description              |
-|------------|--------------------------|
-| sysdm      | Data Mart Administrator  |
-| C##JDOE    | Data Analyst 💁          |
-| C##JSMITH  | Database Developer 🙋    |
-| sys        | Oracle Root User         |
-
-### Synonyms
-
-| Synonym             | Description            |
-|---------------------|------------------------|
-| F_HOSPITALIZATIONS  |                        |
-
-### Tables
-
-| Table               | Description            |
-|---------------------|------------------------|
-| DIM_CONTRACTS       |                        |
-| DIM_DATE            |                        |
-| DIM_DEPARTMENTS     |                        |
-| DIM_INSTITUTIONS    |                        |
-| DIM_NFZADMISSIONS   |                        |
-| DIM_NFZDISCHARGE    |                        |
-| DIM_SERVICES        |                        |
-| HOSPITALIZACJE_CSV  |                        |
-| MV_HOSPITALIZATIONS |                        |
-
-### Views
-
-| View                 | Description            |
-|----------------------|------------------------|
-| RPT_TOTALHOSP       |                        |
-| V_HOSPITALIZATIONS  |                        |
-| V_TRNSLTD_HOSPITALIZATIONS |                   |
+- [Database Specifcation - list of objects](docs/database.md)
 
 ## Installation
 I've prepared some bash and SQL scripts to create database, structures and objects and automate the installation process. You can use either install.sh or rebuild.sh to get started.
 
-**Tool**
-- Set up default coding to UTF-8 (SQLDeveloper, Sublime, DB instance)
-
-**Data Part:**
-- Set up the Oracle database.
-- Copy the repository
-- Review server parameters (TNS, IP, service name) in the sql/ directory scripts and install.sh
-- Run the install.sh script (the script will prompt for database passwords for security and a better user experience)
+- [Installation Manual](docs/install.md)
 
 ![Installation](assets/install.gif)
 
 *Figure 1: Demonstration of the script execution process (gif animations)*
 
-**Visualization Tool:**
-
-- Configure the Apache Superset datasource and dataset with c##jdoe credentials (analytical role), using SqlAlchemu url
-
-`url
-oracle+cx_oracle://c##jdoe:oracle@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.0.51)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=datamart)))
-`
-- Set up charts (but you can also use simple text-based version of reports)
-
 ## Dashboard & Reports Results
 Of course you don't have to go through the installation process. Simply open the text-based dashboard or view the visualization screenshots. However, if you're a professional user, you can review my analysis queries (along with all other scripts) by navigating to the sql/ GitHub directory.
 
-**HR / Regular user**
-- [View the text-based dashboard](dashboard-as-text.md)
-- [View the Apache Superset dashboard](dashboard-superset.md)
-
-**IT professional user**
+- [View the text-based dashboard](_dashboard-preview/dashboard-as-text.md)
+- [View the Apache Superset dashboard](_dashboard-preview/dashboard-superset.md)
 - [Review my queries in sql/5-create-reports-as-analyst.sql](sql/5-create-reports-as-analyst.sql)
 
 ---
