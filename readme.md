@@ -17,7 +17,7 @@ Let's start with a quick preview to grab your attention. I've prepared comprehen
 Here are two dashboard options that showcase the results of my process:
 
 - [**BI Dashboard** - Modern Approach](_dashboard-preview/dashboard-superset.md)
- ![**BI Dashboard**](assets/as-dashboard.png)
+ ![**BI Dashboard**](_dashboard-preview/assets/as-dashboard.png)
 *Example 1: Apache Superset: BI Visualisation with application side processing (in progress!)*
 
 - [**Command Line Report** - Classic Approach](_dashboard-preview/dashboard-as-text.md)
