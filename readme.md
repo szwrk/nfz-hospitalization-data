@@ -11,12 +11,14 @@
 **Projects status:** *in progress*
 
 ---
+
+
 ## Sneak Peek
 Let's start with a quick preview to grab your attention. I've prepared comprehensive cross-sectional descriptions and installers (shell & SQL scripts) for various versions of my reports. Of course, you don't have to go through the installation process. For more details, simply scroll down. 
 
 Here are two dashboard options that showcase the results of my process:
 
-- [**BI Dashboard** - Modern Approach](_dashboard-preview/dashboard-superset.md)
+- [**BI Dashboard** - Modern Approach _(show more screenshots)_](_dashboard-preview/dashboard-superset.md) 
  ![**BI Dashboard**](_dashboard-preview/assets/as-dashboard.png)
 *Example 1: Apache Superset: BI Visualisation with application side processing (in progress!)*
 
@@ -30,12 +32,22 @@ ___________________________________
 21,194,349
 ```
 
-*Example 2: SQlCl: DB Object with Text Output*
+*Example 2: SQlCl: Show Report View as Text Output*
 
 and more...
 
 ---
 ## Introduction
+### Project Objectives
+Develop a ETL pipeline and utilize BI tools to process and visualize over 21 million NFZ hospitalization records (2017-2022), with a emphasis on data processing framework.
+
+### Key Components
+- Environment Setup: Script to automate database and environment configuration
+- ETL & DWH: Automated extraction, transformation, and loading of data into a star schema data mart
+- Reports & Dashboards:
+    - Data Profiling Dashboard (visualisation + text-based report)
+    - Main Analytical Dashboard (visualisation + text-based report)
+
 ### Used data
 This project is based on real NFZ data sourced from the open-data portal, dane.gov.pl.
 The dataset comprises all hospitalizations covered by the NFZ (National Health Fund of Poland) in 2017-2022 *.
@@ -52,18 +64,7 @@ It's based on the public goverment repositories hub named data.gov.pl.
 Used repository is not bad quality, but I saw small differences between files. I want to make some improvements, create DWH star schema, materialized view as fact table, dimensions etc...
 I will clean and process the data to visualize it with Apache Superset.
 
-### Project Objectives
 
-I created a complete process to:
-
-- Prepare the test environment and database
-- Automate the extract, transform, load (precisely ELT) data process
-- Create data mart, load data to facts&dimensions tables
-- Refresh Materialized Views, Gather schema stats
-- Create user reports views, analyze the data
-
-You can use my installer shell script. 
-That site contains screenshots of any output results.
 
 ## Tech stack 
 This repository showcases my Data Engineering project, highlighting my diverse data-related skills. 
