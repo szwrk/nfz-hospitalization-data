@@ -527,4 +527,11 @@ order by 1
 ;
 desc dm_nfzhosp.F_HOSPITALIZATIONS
 ;
-
+desc dm_nfzhosp.dim_date
+;
+select dd.year || '-' || lpad(dd.month,2,0) as ym, count(*) as quantity
+from dm_nfzhosp.f_hospitalizations f
+   join dm_nfzhosp.dim_date dd on f.dim_date_id = dd.id_date
+group by dd.year, dd.month
+order by 2 desc
+;

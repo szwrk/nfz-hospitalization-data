@@ -2,7 +2,7 @@ CONNECT c##jdoe/ORACLE@datamart;
 
 ## Facts
 /
-create or replace view c##jdoe.prf_hosp_distr_per_dept as select 
+create or replace view c##jdoe.prf_hosp_distr_per_dept_histogram as select 
    d.value,
    count(h.dim_department_id) as quantity from (
    select 
@@ -43,7 +43,23 @@ group by d.value
 order by 1
 /
 SELECT value, quantity
-FROM C##JDOE.PRF_HOSP_DISTR_PER_DEPT
+FROM C##JDOE.prf_hosp_distr_per_dept_histogram
 ;
+/
+## Date dimension
+create or replace view c##jdoe.prf_date_distr_histogram as
+select dd.year || '-' || lpad(dd.month,2,0) as ym, count(*) as quantity
+from dm_nfzhosp.f_hospitalizations f
+   join dm_nfzhosp.dim_date dd on f.dim_date_id = dd.id_date
+group by dd.year, dd.month
+order by 2 desc
+;
+/
+SELECT
+   ym,
+   quantity
+FROM C##JDOE.prf_date_distr_histogram
+;
+/
 
 EXIT;
