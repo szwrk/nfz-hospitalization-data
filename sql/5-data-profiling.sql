@@ -1,6 +1,5 @@
 CONNECT c##jdoe/ORACLE@datamart;
 
-## Facts
 /
 create or replace view c##jdoe.prf_hosp_distr_per_dept_histogram as select 
    d.value,
@@ -42,11 +41,8 @@ right join (
 group by d.value
 order by 1
 /
-SELECT value, quantity
-FROM C##JDOE.prf_hosp_distr_per_dept_histogram
 ;
 /
-## Date dimension
 create or replace view c##jdoe.prf_date_distr_histogram as
 select dd.year || '-' || lpad(dd.month,2,0) as ym, count(*) as quantity
 from dm_nfzhosp.f_hospitalizations f
@@ -54,12 +50,6 @@ from dm_nfzhosp.f_hospitalizations f
 group by dd.year, dd.month
 order by 2 desc
 ;
-/
-SELECT
-   ym,
-   quantity
-FROM C##JDOE.prf_date_distr_histogram
-;
-/
+
 
 EXIT;
