@@ -132,6 +132,7 @@ Of course you don't have to go through the installation process. Simply open the
 
 - [View the text-based dashboard](_dashboard-preview/dashboard-as-text.md)
 - [View the Apache Superset dashboard](_dashboard-preview/dashboard-superset.md)
-- [Review my queries in sql/5-create-reports-as-analyst.sql](sql/5-create-reports-as-analyst.sql)
+- [Review my data profiling in sql/5-data-profiling.sql](sql/5-data-profiling.sql)
+- [Review my queries in sql/6-create-reports-as-analyst.sql](sql/5-create-reports-as-analyst.sql)
 
 ---

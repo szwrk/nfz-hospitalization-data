@@ -24,7 +24,8 @@ Files used in conjunction with the shell script:
     ├── 2-create-mart.sql
     ├── 3-load-dim.sql
     ├── 4-tests.sql
-    └── 5-create-reports-as-analyst.sql
+    ├── 5-data-profiling.sql
+    └── 6-create-reports-as-analyst.sql
 ```
 
 ## Initial Setup

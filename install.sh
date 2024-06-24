@@ -6,6 +6,7 @@ db_tns_datamart_pdb="192.168.0.51:1521/datamart"
 dba_name="sys"
 dev_name="c##jsmith"
 datamart_admin_name="sysdm"
+analyst_name=c##jdoe
 
 check_success() {
     if [ $? -ne 0 ]; then
@@ -32,9 +33,13 @@ read -s -p 'Enter dba password : ' dba_pass
 echo ' '
 read -s -p 'Enter dev password : ' dev_pass
 
-# DEV Credentials with validation
+# Data mart admin Credentials with validation
 echo ' '
-read -s -p 'Enter datamart password : ' datamart_admin_pass
+read -s -p 'Enter DM admin password : ' datamart_admin_pass
+
+# Analyst Credentials with validation
+echo ' '
+read -s -p 'Enter analyst password : ' analyst_pass
 
 # log the start time
 instalattion_start_time=$(date +%s)
@@ -158,10 +163,24 @@ EXIT
 EOF
 
 echo "======================================"
-echo " Tests"
+echo " DWH Tests"
 echo "======================================"
 
 sql -S ${datamart_admin_name}@${db_tns_datamart_pdb} @4-tests.sql <<EOF
+${datamart_admin_pass}
+exit
+EOF
+
+echo "======================================"
+echo " Reports Views"
+echo "======================================"
+
+sql -S ${analyst_name}@${db_tns_datamart_pdb} @5-data-profiling.sql <<EOF
+${datamart_admin_pass}
+exit
+EOF
+
+sql -S ${analyst_name}@${db_tns_datamart_pdb} @6-create-reports-as-analyst.sql <<EOF
 ${datamart_admin_pass}
 exit
 EOF

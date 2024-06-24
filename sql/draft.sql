@@ -480,3 +480,48 @@ from RPT_TOTALHOSP
 --where hosp_count is not null
 --cost 61549
 --;
+
+--profiling
+--  the distribution of hospitalizations across different departments
+SELECT 
+   d.value,
+   count(h.DIM_DEPARTMENT_ID) as ile FROM (
+   select 
+   DIM_DEPARTMENT_ID,
+   case
+     when ile < 500000 then  '1: < 500K'
+     when ile < 1000000 then '2: 500K - 999K'
+     when ile < 1500000 then '3: 1M - 1.49M'
+     when ile < 2000000 then '4: 1.5M - 1.99M'
+     when ile < 2500000 then '5: 2M - 2.49M'
+     when ile < 3000000 then '6: 2.5M - 2.99M'
+     when ile < 3500000 then '7: 3M - 3.49M'
+     when ile < 5000000 then '8: 3.5M - 4.99M'
+     else '9: 5M+'
+   end as ile
+   from
+   (
+      select DIM_DEPARTMENT_ID, count(*) as ile
+      from f_hospitalizations
+      group by DIM_DEPARTMENT_ID
+   )
+) h
+right join (
+   select *
+   from (
+      values 
+       (1, '1: < 500K'),
+       (2, '2: 500K - 999K'),
+       (3, '3: 1M - 1.49M'),
+       (4, '4: 1.5M - 1.99M'),
+       (5, '5: 2M - 2.49M'),
+       (6, '6: 2.5M - 2.99M'),
+       (7, '7: 3M - 3.49M'),
+       (8, '8: 3.5M - 4.99M'),
+       (9, '9: 5M+') as dict (id,value)
+       ) d on h.ile = d.value
+group by d.value
+order by 1
+--connect by labels
+;
+desc f_hospitalizations
