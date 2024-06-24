@@ -1,10 +1,10 @@
 --1. Copy of source csv "raw" data to new table with cleaning, translations PL -> ENG, processing
-CREATE TABLE hospitalizations_2022 AS 
-WITH 
- w_hospitalizations_2022 AS (
-   SELECT
-      rok YEAR
-      ,miesiac MONTH
+create table hospitalizations_2022 as 
+with 
+ w_hospitalizations_2022 as (
+   select
+      rok year
+      ,miesiac month
       ,ow_nfz nfz_department_code
       ,nip_podmiotu institution_nip_code
       ,kod_produktu_kontraktowego nfz_contract_code
@@ -15,63 +15,63 @@ WITH
       ,grupa_wiekowa_pacjenta age_category
       ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
       ,liczba_hospitalizacji hospitalization_count
-   FROM hospitalizacje_2022
+   from hospitalizacje_2022
    ) 
- ,w_discharge_mode_dict(id_pos, value) AS (
-   SELECT 1,'zakończenie procesu terapeutycznego lub diagnostycznego' UNION ALL
-   SELECT 2,'skierowanie do dalszego leczenia w lecznictwie ambulatoryjnym' UNION ALL
-   SELECT 3,'skierowanie do dalszego leczenia w innym szpitalu' UNION ALL
-   SELECT 4,'skierowanie do dalszego leczenia w innym niż szpital, zakładzie opieki stacjonarnej' UNION ALL
-   SELECT 6,'wypisanie na własne żądanie' UNION ALL
-   SELECT 7,'osoba leczona samowolnie opuściła zakład opieki stacjonarnej przed zakończeniem procesu terapeutycznego lub diagnostycznego' UNION ALL
-   SELECT 8,'wypisanie na podstawie art. 22 ust. 1 pkt 3 ustawy o zakładach opieki zdrowotnej' UNION ALL
-   SELECT 9,'zgon pacjenta' UNION ALL
-   SELECT 10 ,'osoba leczona, przyjęta w trybie oznaczonym kodem "9" lub "10", która samowolnie opuściła podmiot leczniczy' UNION ALL
-   SELECT 11 ,'wypisanie na podstawie art. 46 albo 47 ustawy z dnia 22 listopada 2013 r.'
+ ,w_discharge_mode_dict(id_pos, value) as (
+   select 1,'zakończenie procesu terapeutycznego lub diagnostycznego' union all
+   select 2,'skierowanie do dalszego leczenia w lecznictwie ambulatoryjnym' union all
+   select 3,'skierowanie do dalszego leczenia w innym szpitalu' union all
+   select 4,'skierowanie do dalszego leczenia w innym niż szpital, zakładzie opieki stacjonarnej' union all
+   select 6,'wypisanie na własne żądanie' union all
+   select 7,'osoba leczona samowolnie opuściła zakład opieki stacjonarnej przed zakończeniem procesu terapeutycznego lub diagnostycznego' union all
+   select 8,'wypisanie na podstawie art. 22 ust. 1 pkt 3 ustawy o zakładach opieki zdrowotnej' union all
+   select 9,'zgon pacjenta' union all
+   select 10 ,'osoba leczona, przyjęta w trybie oznaczonym kodem "9" lub "10", która samowolnie opuściła podmiot leczniczy' union all
+   select 11 ,'wypisanie na podstawie art. 46 albo 47 ustawy z dnia 22 listopada 2013 r.'
  ),
-w_admission_mode_dict(id_pos, value) AS (
-  SELECT 1, 'Przyjęcie planowe' UNION ALL
-  SELECT 2, 'Przyjęcie w trybie nagłym w wyniku przekazania przez zespół ratownictwa medycznego' UNION ALL
-  SELECT 3, 'Przyjęcie w trybie nagłym – inne przypadki' UNION ALL
-  SELECT 4, 'Przyjęcie w trybie nagłym bez skierowania' UNION ALL
-  SELECT 5, 'Przyjęcie noworodka w wyniku porodu w tym szpitalu' UNION ALL
-  SELECT 6, 'Przyjęcie planowe na podstawie skierowania' UNION ALL
-  SELECT 7, 'Przyjęcie planowe osoby, która skorzystała ze świadczeń opieki zdrowotnej poza kolejnością, zgodnie z uprawnieniami przysługującymi jej na podstawie ustawy' UNION ALL
-  SELECT 8, 'Przeniesienie z innego szpitala' UNION ALL
-  SELECT 9, 'Przyjęcie osoby podlegającej obowiązkowemu leczeniu' UNION ALL
-  SELECT 10, 'Przyjęcie przymusowe' UNION ALL
-  SELECT 11, 'Przyjęcie na podstawie karty diagnostyki i leczenia onkologicznego'
+w_admission_mode_dict(id_pos, value) as (
+  select 1, 'Przyjęcie planowe' union all
+  select 2, 'Przyjęcie w trybie nagłym w wyniku przekazania przez zespół ratownictwa medycznego' union all
+  select 3, 'Przyjęcie w trybie nagłym – inne przypadki' union all
+  select 4, 'Przyjęcie w trybie nagłym bez skierowania' union all
+  select 5, 'Przyjęcie noworodka w wyniku porodu w tym szpitalu' union all
+  select 6, 'Przyjęcie planowe na podstawie skierowania' union all
+  select 7, 'Przyjęcie planowe osoby, która skorzystała ze świadczeń opieki zdrowotnej poza kolejnością, zgodnie z uprawnieniami przysługującymi jej na podstawie ustawy' union all
+  select 8, 'Przeniesienie z innego szpitala' union all
+  select 9, 'Przyjęcie osoby podlegającej obowiązkowemu leczeniu' union all
+  select 10, 'Przyjęcie przymusowe' union all
+  select 11, 'Przyjęcie na podstawie karty diagnostyki i leczenia onkologicznego'
 )
-SELECT 
-  hosp.YEAR || '/' || lpad(hosp.MONTH,2,0) as hosp_date_period
+select 
+  hosp.year || '/' || lpad(hosp.month,2,0) as hosp_date_period
  ,dept_dict.nfz_name || ' (' || lpad(hosp.nfz_department_code,2,0) || ')' dept_name_code
  ,hosp.institution_nip_code institution_nip_code
  ,hosp.nfz_service_code nfz_service_code
  ,hosp.nfz_contract_code nfz_contract_code
- ,CASE hosp.patient_gender 
-    WHEN 'K' THEN 'M'
-    WHEN 'M' THEN 'F'
-    ELSE 'unknown'
- END as patient_gender
- ,REPLACE(hosp.age_category,'65 i więcej','>65') age_category
- ,CASE hosp.hosp_length_in_day_category 
-    WHEN '6 i więcej dni' THEN '>6'
-    WHEN '0 dni' THEN '0'
-    WHEN '3-5 dni' THEN '3-5'
-    WHEN '1-2 dni' THEN '1-2'
-   ELSE 'unknown' 
-   END AS hosp_length_in_day_category 
+ ,case hosp.patient_gender 
+    when 'K' then 'M'
+    when 'M' then 'F'
+    else 'unknown'
+ end as patient_gender
+ ,replace(hosp.age_category,'65 i więcej','>65') age_category
+ ,case hosp.hosp_length_in_day_category 
+    when '6 i więcej dni' then '>6'
+    when '0 dni' then '0'
+    when '3-5 dni' then '3-5'
+    when '1-2 dni' then '1-2'
+   else 'unknown' 
+   end as hosp_length_in_day_category 
  ,hosp.discharge_code discharge_code
  ,concat(discharge.value,' (', hosp.discharge_code, ')') discharge_mode
  ,hosp.admission_code admission_code
  ,concat(admission.value, ' (', hosp.admission_code,')') admission_mode 
-FROM w_hospitalizations_2022 hosp
- LEFT JOIN w_discharge_mode_dict discharge ON hosp.discharge_code = discharge.id_pos
- LEFT JOIN w_admission_mode_dict admission ON hosp.admission_code = admission.id_pos
- LEFT JOIN (
-    SELECT id_nfz, nfz_name   
-    FROM (
-        VALUES
+from w_hospitalizations_2022 hosp
+ left join w_discharge_mode_dict discharge on hosp.discharge_code = discharge.id_pos
+ left join w_admission_mode_dict admission on hosp.admission_code = admission.id_pos
+ left join (
+    select id_nfz, nfz_name   
+    from (
+        values
             (1, 'Dolnośląski'),
             (2, 'Kujawsko-Pomorski'),
             (3, 'Lubelski'),
@@ -88,90 +88,90 @@ FROM w_hospitalizations_2022 hosp
             (14, 'Warmińsko-Mazurski'),
             (15, 'Wielkopolski'),
             (16, 'Zachodniopomorski')
-) AS nfz_dept_dict(id_nfz, nfz_name)
-) dept_dict ON hosp.nfz_department_code = dept_dict.id_nfz
+) as nfz_dept_dict(id_nfz, nfz_name)
+) dept_dict on hosp.nfz_department_code = dept_dict.id_nfz
 ;
 --add some comment to table
-COMMENT ON TABLE hospitalizations_2022
-IS oracleCopied raw data from source CSV (Hospitalization Data Set Settlements JGP - data.gov.pl) to a new table, performed data cleaning, translated from Polish (PL) to English (ENG), and processed the dataoracle
+comment on table hospitalizations_2022
+is oraclecopied raw data from source csv (hospitalization data set settlements jgp - data.gov.pl) to a new table, performed data cleaning, translated from polish (pl) to english (eng), and processed the dataoracle
 ;
 --checks
 --source table load from csv file, data.gov.pl
 /
-SELECT * 
-FROM hospitalizacje_2022 
+select * 
+from hospitalizacje_2022 
 ;
 /
-SELECT * 
-FROM v_hospitalizations_2022
+select * 
+from v_hospitalizations_2022
 /
 --list nfz domain w_admission_mode_dict values
-SELECT DISTINCT(kod_trybu_przyjecia) 
-FROM hospitalizacje_2022
+select distinct(kod_trybu_przyjecia) 
+from hospitalizacje_2022
 ;
 /
 --list nfz domain w_discharge_mode_dict values
-SELECT DISTINCT(kod_trybu_wypisu) 
-FROM hospitalizacje_2022
+select distinct(kod_trybu_wypisu) 
+from hospitalizacje_2022
 ;
 /
 --list nfz domain w_discharge_mode_dict values,
-SELECT DISTINCT(v_w_hospitalizations_2022.age_cat) 
-FROM v_w_hospitalizations_2022
+select distinct(v_w_hospitalizations_2022.age_cat) 
+from v_w_hospitalizations_2022
 ;
 /
 --check age categieries
-SELECT DISTINCT(v_w_hospitalizations_2022.hosp_length_in_day_category) 
-FROM v_w_hospitalizations_2022
+select distinct(v_w_hospitalizations_2022.hosp_length_in_day_category) 
+from v_w_hospitalizations_2022
 ;
 --check nulls
-SELECT * 
-FROM v_w_hospitalizations_2022
-WHERE discharge_mode IS NULL OR admission_mode IS NULL
+select * 
+from v_w_hospitalizations_2022
+where discharge_mode is null or admission_mode is null
 ;
 /
 -- I found mooore data from years 2017-2021 so I will use it
 --copy structure
 create table hospitalizacje as select * from hospitalizacje_2022 where 1=0
 ;
-ALTER TABLE hospitalizacje
-MOVE TABLESPACE DATAGOV_TBS
+alter table hospitalizacje
+move tablespace datagov_tbs
 ;
 /
 --add quta
-ALTER DATABASE DATAFILE '/opt/oracle/oradata/FREE/FREEPDB1/datagov01.dbf'
-RESIZE 5G;
-ALTER DATABASE DATAFILE '/opt/oracle/oradata/FREE/FREEPDB1/datagov01.dbf'
-AUTOEXTEND ON NEXT 1280K 
-MAXSIZE 5G
+alter database datafile '/opt/oracle/oradata/FREE/FREEPDB1/datagov01.dbf'
+resize 5G;
+alter database datafile '/opt/oracle/oradata/FREE/FREEPDB1/datagov01.dbf'
+autoextend on next 1280K 
+maxsize 5G
 ;
 --2. Analitic query for waterfall chart
-CREATE VIEW v_hosps_monthly_diffs
-WITH monthly_counts AS (
-    SELECT
-        HOSP_PERIOD,
-        COUNT(1) AS month_count
-    FROM
+create view v_hosps_monthly_diffs
+with monthly_counts as (
+    select
+        hosp_period,
+        count(1) as month_count
+    from
         v_hospitalizations_2022
-    GROUP BY
-        HOSP_PERIOD
+    group by
+        hosp_period
 )
-SELECT
-    HOSP_PERIOD,
+select
+    hosp_period,
     month_count,
-    nvl(month_count - LAG(month_count, 1) OVER (ORDER BY HOSP_PERIOD),month_count) AS diff_with_prev_month
-FROM
+    nvl(month_count - lag(month_count, 1) over (order by hosp_period),month_count) as diff_with_prev_month
+from
     monthly_counts
-ORDER BY
-    HOSP_PERIOD;
+order by
+    hosp_period;
 
 -- Values feature is not supported with materialized view... so i just use with clause
-CREATE TABLE hospitalizations_2022 AS 
-WITH 
- w_hospitalizations_2022 AS (
-   SELECT
-      rok YEAR
-      ,miesiac MONTH
+create table hospitalizations_2022 as 
+with 
+ w_hospitalizations_2022 as (
+   select
+      rok year
+      ,miesiac month
       ,ow_nfz nfz_department_code
       ,nip_podmiotu institution_nip_code
       ,kod_produktu_kontraktowego nfz_contract_code
@@ -182,80 +182,80 @@ WITH
       ,grupa_wiekowa_pacjenta age_category
       ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
       ,liczba_hospitalizacji hospitalization_count
-   FROM hospitalizacje_2022
+   from hospitalizacje_2022
    ) 
- ,w_discharge_mode_dict(id_pos, value) AS (
-   SELECT 1,'zakończenie procesu terapeutycznego lub diagnostycznego' UNION ALL
-   SELECT 2,'skierowanie do dalszego leczenia w lecznictwie ambulatoryjnym' UNION ALL
-   SELECT 3,'skierowanie do dalszego leczenia w innym szpitalu' UNION ALL
-   SELECT 4,'skierowanie do dalszego leczenia w innym niż szpital, zakładzie opieki stacjonarnej' UNION ALL
-   SELECT 6,'wypisanie na własne żądanie' UNION ALL
-   SELECT 7,'osoba leczona samowolnie opuściła zakład opieki stacjonarnej przed zakończeniem procesu terapeutycznego lub diagnostycznego' UNION ALL
-   SELECT 8,'wypisanie na podstawie art. 22 ust. 1 pkt 3 ustawy o zakładach opieki zdrowotnej' UNION ALL
-   SELECT 9,'zgon pacjenta' UNION ALL
-   SELECT 10 ,'osoba leczona, przyjęta w trybie oznaczonym kodem "9" lub "10", która samowolnie opuściła podmiot leczniczy' UNION ALL
-   SELECT 11 ,'wypisanie na podstawie art. 46 albo 47 ustawy z dnia 22 listopada 2013 r.'
+ ,w_discharge_mode_dict(id_pos, value) as (
+   select 1,'zakończenie procesu terapeutycznego lub diagnostycznego' union all
+   select 2,'skierowanie do dalszego leczenia w lecznictwie ambulatoryjnym' union all
+   select 3,'skierowanie do dalszego leczenia w innym szpitalu' union all
+   select 4,'skierowanie do dalszego leczenia w innym niż szpital, zakładzie opieki stacjonarnej' union all
+   select 6,'wypisanie na własne żądanie' union all
+   select 7,'osoba leczona samowolnie opuściła zakład opieki stacjonarnej przed zakończeniem procesu terapeutycznego lub diagnostycznego' union all
+   select 8,'wypisanie na podstawie art. 22 ust. 1 pkt 3 ustawy o zakładach opieki zdrowotnej' union all
+   select 9,'zgon pacjenta' union all
+   select 10 ,'osoba leczona, przyjęta w trybie oznaczonym kodem "9" lub "10", która samowolnie opuściła podmiot leczniczy' union all
+   select 11 ,'wypisanie na podstawie art. 46 albo 47 ustawy z dnia 22 listopada 2013 r.'
  )
- ,w_admission_mode_dict(id_pos, value) AS (
-  SELECT 1, 'Przyjęcie planowe' UNION ALL
-  SELECT 2, 'Przyjęcie w trybie nagłym w wyniku przekazania przez zespół ratownictwa medycznego' UNION ALL
-  SELECT 3, 'Przyjęcie w trybie nagłym – inne przypadki' UNION ALL
-  SELECT 4, 'Przyjęcie w trybie nagłym bez skierowania' UNION ALL
-  SELECT 5, 'Przyjęcie noworodka w wyniku porodu w tym szpitalu' UNION ALL
-  SELECT 6, 'Przyjęcie planowe na podstawie skierowania' UNION ALL
-  SELECT 7, 'Przyjęcie planowe osoby, która skorzystała ze świadczeń opieki zdrowotnej poza kolejnością, zgodnie z uprawnieniami przysługującymi jej na podstawie ustawy' UNION ALL
-  SELECT 8, 'Przeniesienie z innego szpitala' UNION ALL
-  SELECT 9, 'Przyjęcie osoby podlegającej obowiązkowemu leczeniu' UNION ALL
-  SELECT 10, 'Przyjęcie przymusowe' UNION ALL
-  SELECT 11, 'Przyjęcie na podstawie karty diagnostyki i leczenia onkologicznego'
+ ,w_admission_mode_dict(id_pos, value) as (
+  select 1, 'Przyjęcie planowe' union all
+  select 2, 'Przyjęcie w trybie nagłym w wyniku przekazania przez zespół ratownictwa medycznego' union all
+  select 3, 'Przyjęcie w trybie nagłym – inne przypadki' union all
+  select 4, 'Przyjęcie w trybie nagłym bez skierowania' union all
+  select 5, 'Przyjęcie noworodka w wyniku porodu w tym szpitalu' union all
+  select 6, 'Przyjęcie planowe na podstawie skierowania' union all
+  select 7, 'Przyjęcie planowe osoby, która skorzystała ze świadczeń opieki zdrowotnej poza kolejnością, zgodnie z uprawnieniami przysługującymi jej na podstawie ustawy' union all
+  select 8, 'Przeniesienie z innego szpitala' union all
+  select 9, 'Przyjęcie osoby podlegającej obowiązkowemu leczeniu' union all
+  select 10, 'Przyjęcie przymusowe' union all
+  select 11, 'Przyjęcie na podstawie karty diagnostyki i leczenia onkologicznego'
 )
-,nfz_dept_dict AS (
-   SELECT 1 AS id_nfz, 'Dolnośląski' AS nfz_name UNION ALL
-   SELECT 2, 'Kujawsko-Pomorski' UNION ALL
-   SELECT 3, 'Lubelski' UNION ALL
-   SELECT 4, 'Lubuski' UNION ALL
-   SELECT 5, 'Łódzki' UNION ALL
-   SELECT 6, 'Małopolski' UNION ALL
-   SELECT 7, 'Mazowiecki' UNION ALL
-   SELECT 8, 'Opolski' UNION ALL
-   SELECT 9, 'Podkarpacki' UNION ALL
-   SELECT 10, 'Podlaski' UNION ALL
-   SELECT 11, 'Pomorski' UNION ALL
-   SELECT 12, 'Śląski' UNION ALL
-   SELECT 13, 'Świętokrzyski' UNION ALL
-   SELECT 14, 'Warmińsko-Mazurski' UNION ALL
-   SELECT 15, 'Wielkopolski' UNION ALL
-   SELECT 16, 'Zachodniopomorski'
+,nfz_dept_dict as (
+   select 1 as id_nfz, 'Dolnośląski' as nfz_name union all
+   select 2, 'Kujawsko-Pomorski' union all
+   select 3, 'Lubelski' union all
+   select 4, 'Lubuski' union all
+   select 5, 'Łódzki' union all
+   select 6, 'Małopolski' union all
+   select 7, 'Mazowiecki' union all
+   select 8, 'Opolski' union all
+   select 9, 'Podkarpacki' union all
+   select 10, 'Podlaski' union all
+   select 11, 'Pomorski' union all
+   select 12, 'Śląski' union all
+   select 13, 'Świętokrzyski' union all
+   select 14, 'Warmińsko-Mazurski' union all
+   select 15, 'Wielkopolski' union all
+   select 16, 'Zachodniopomorski'
  )
-SELECT 
-  hosp.YEAR || '/' || lpad(hosp.MONTH,2,0) as hosp_date_period
+select 
+  hosp.year || '/' || lpad(hosp.month,2,0) as hosp_date_period
  ,dept_dict.nfz_name || ' (' || lpad(hosp.nfz_department_code,2,0) || ')' dept_name_code
  ,hosp.institution_nip_code institution_nip_code
  ,hosp.nfz_service_code nfz_service_code
  ,hosp.nfz_contract_code nfz_contract_code
- ,CASE hosp.patient_gender 
-    WHEN 'K' THEN 'M'
-    WHEN 'M' THEN 'F'
-    ELSE 'unknown'
- END as patient_gender
- ,REPLACE(hosp.age_category,'65 i więcej','>65') age_category
- ,CASE hosp.hosp_length_in_day_category 
-    WHEN '6 i więcej dni' THEN '>6'
-    WHEN '0 dni' THEN '0'
-    WHEN '3-5 dni' THEN '3-5'
-    WHEN '1-2 dni' THEN '1-2'
-   ELSE 'unknown' 
-   END AS hosp_length_in_day_category 
+ ,case hosp.patient_gender 
+    when 'K' then 'M'
+    when 'M' then 'F'
+    else 'unknown'
+ end as patient_gender
+ ,replace(hosp.age_category,'65 i więcej','>65') age_category
+ ,case hosp.hosp_length_in_day_category 
+    when '6 i więcej dni' then '>6'
+    when '0 dni' then '0'
+    when '3-5 dni' then '3-5'
+    when '1-2 dni' then '1-2'
+   else 'unknown' 
+   end as hosp_length_in_day_category 
  ,hosp.discharge_code discharge_code
  ,concat(discharge.value,' (', hosp.discharge_code, ')') discharge_mode
  ,hosp.admission_code admission_code
  ,concat(admission.value, ' (', hosp.admission_code,')') admission_mode 
-FROM w_hospitalizations_2022 hosp
- LEFT JOIN w_discharge_mode_dict discharge ON hosp.discharge_code = discharge.id_pos
- LEFT JOIN w_admission_mode_dict admission ON hosp.admission_code = admission.id_pos
- LEFT JOIN w_discharge_mode_dict discharge ON hosp.discharge_code = discharge.id_pos
- LEFT JOIN w_admission_mode_dict admission ON hosp.admission_code = admission.id_pos
- LEFT JOIN nfz_dept_dict dept_dict ON hosp.nfz_department_code = dept_dict.id_nfz;
+from w_hospitalizations_2022 hosp
+ left join w_discharge_mode_dict discharge on hosp.discharge_code = discharge.id_pos
+ left join w_admission_mode_dict admission on hosp.admission_code = admission.id_pos
+ left join w_discharge_mode_dict discharge on hosp.discharge_code = discharge.id_pos
+ left join w_admission_mode_dict admission on hosp.admission_code = admission.id_pos
+ left join nfz_dept_dict dept_dict on hosp.nfz_department_code = dept_dict.id_nfz;
 ;
 
 -- about SQLLoader, u can use direct for faster data loading, way to use 1. add to comment, 2. add parameter to control file, i tried with parall options but its not give me any decrease of execution time... for that simple case
@@ -264,12 +264,12 @@ FROM w_hospitalizations_2022 hosp
 
 -- Table is too large (limit 12 GB in oracle version), so I convert my single analytical table into a classic star schema, extract dictionaries to dimansions, making the hospitalization table a fact table. I also add a layer for analytics users (synonyms, views for mv, privs)
 -- institution_nip_code is a candidate for dimension cardinality circa 8k
-CREATE MATERIALIZED VIEW dm_nfzhosp.mv_hospitalizations AS
-WITH 
- w_hospitalizations AS (
-   SELECT
-      rok YEAR
-      ,miesiac MONTH
+create materialized view dm_nfzhosp.mv_hospitalizations as
+with 
+ w_hospitalizations as (
+   select
+      rok year
+      ,miesiac month
       ,ow_nfz nfz_department_code
       ,nip_podmiotu institution_nip_code
       ,kod_produktu_kontraktowego nfz_contract_code
@@ -280,47 +280,47 @@ WITH
       ,grupa_wiekowa_pacjenta age_category
       ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
       ,liczba_hospitalizacji hospitalization_count
-   FROM dm_nfzhosp.hospitalization_source
+   from dm_nfzhosp.hospitalization_source
    ) 
-, w_nfz_dept_dict(id_nfz, region_name, nfz_abbr) AS (
-   SELECT 1 ,'Dolnośląski' , 'DŚ' UNION ALL
-   SELECT 2, 'Kujawsko-Pomorski', 'KP'  UNION ALL
-   SELECT 3, 'Lubelski', 'LB'  UNION ALL
-   SELECT 4, 'Lubuski', 'LS'  UNION ALL
-   SELECT 5, 'Łódzki', 'ŁD'  UNION ALL
-   SELECT 6, 'Małopolski', 'MP'  UNION ALL
-   SELECT 7, 'Mazowiecki', 'MZ'  UNION ALL
-   SELECT 8, 'Opolski', 'OP'  UNION ALL
-   SELECT 9, 'Podkarpacki', 'PK'  UNION ALL
-   SELECT 10, 'Podlaski', 'PL'  UNION ALL
-   SELECT 11, 'Pomorski', 'PM'  UNION ALL
-   SELECT 12, 'Śląski', 'ŚL'  UNION ALL
-   SELECT 13, 'Świętokrzyski', 'ŚK'  UNION ALL
-   SELECT 14, 'Warmińsko-Mazurski', 'WM'  UNION ALL
-   SELECT 15, 'Wielkopolski', 'WP'  UNION ALL
-   SELECT 16, 'Zachodniopomorski', 'ZP' 
+, w_nfz_dept_dict(id_nfz, region_name, nfz_abbr) as (
+   select 1 ,'Dolnośląski' , 'DŚ' union all
+   select 2, 'Kujawsko-Pomorski', 'KP'  union all
+   select 3, 'Lubelski', 'LB'  union all
+   select 4, 'Lubuski', 'LS'  union all
+   select 5, 'Łódzki', 'ŁD'  union all
+   select 6, 'Małopolski', 'MP'  union all
+   select 7, 'Mazowiecki', 'MZ'  union all
+   select 8, 'Opolski', 'OP'  union all
+   select 9, 'Podkarpacki', 'PK'  union all
+   select 10, 'Podlaski', 'PL'  union all
+   select 11, 'Pomorski', 'PM'  union all
+   select 12, 'Śląski', 'ŚL'  union all
+   select 13, 'Świętokrzyski', 'ŚK'  union all
+   select 14, 'Warmińsko-Mazurski', 'WM'  union all
+   select 15, 'Wielkopolski', 'WP'  union all
+   select 16, 'Zachodniopomorski', 'ZP' 
 )
-SELECT 
-  hosp.YEAR || '/' || lpad(hosp.MONTH,2,0) as hosp_date_period
+select 
+  hosp.year || '/' || lpad(hosp.month,2,0) as hosp_date_period
  ,dept_dict.nfz_abbr || ' (' || lpad(hosp.nfz_department_code,2,0) || ')' dept_name_code
  ,hosp.institution_nip_code institution_nip_code
  ,hosp.nfz_service_code nfz_service_code
  ,hosp.nfz_contract_code nfz_contract_code
- ,CASE hosp.patient_gender 
-    WHEN 'K' THEN 'F'
-    WHEN 'M' THEN 'M'
-    ELSE '-'
- END as patient_gender
- ,REPLACE(hosp.age_category,'65 i więcej','>65') age_category
- ,CASE hosp.hosp_length_in_day_category 
-    WHEN '6 i więcej dni' THEN '>6'
-    WHEN '0 dni' THEN '0'
-    WHEN '3-5 dni' THEN '3-5'
-    WHEN '1-2 dni' THEN '1-2'
-   ELSE '-' 
-   END AS hosp_length_in_day_category 
-FROM w_hospitalizations hosp
-   LEFT JOIN w_nfz_dept_dict dept_dict ON hosp.nfz_department_code = dept_dict.id_nfz
+ ,case hosp.patient_gender 
+    when 'K' then 'F'
+    when 'M' then 'M'
+    else '-'
+ end as patient_gender
+ ,replace(hosp.age_category,'65 i więcej','>65') age_category
+ ,case hosp.hosp_length_in_day_category 
+    when '6 i więcej dni' then '>6'
+    when '0 dni' then '0'
+    when '3-5 dni' then '3-5'
+    when '1-2 dni' then '1-2'
+   else '-' 
+   end as hosp_length_in_day_category 
+from w_hospitalizations hosp
+   left join w_nfz_dept_dict dept_dict on hosp.nfz_department_code = dept_dict.id_nfz
    -- WHERE hosp.year >= 2020
 ;
 /**
@@ -329,49 +329,49 @@ Human readable vs performance.
 Small int vs number.
 For my slow server and oracle express limits.. i prefer better optymalizatio
 */
-CREATE TABLE DIM_DATE AS
-SELECT 
-   ROWNUM AS id_date
-   ,TO_CHAR(ADD_MONTHS(TO_DATE('2019-01-01','YYYY-MM-DD'), LEVEL)
-      ,'YYYY') AS YEAR
-   ,TO_CHAR(ADD_MONTHS(TO_DATE('2019-01-01','YYYY-MM-DD'), LEVEL)
-      ,'MM') AS MONTH
-FROM DUAL
-CONNECT BY LEVEL <= MONTHS_BETWEEN(TO_DATE('2030-01-01','YYYY-MM-DD'),TO_DATE('2019-01-01','YYYY-MM-DD')) 
+create table dim_date as
+select 
+   rownum as id_date
+   ,to_char(add_months(to_date('2019-01-01','YYYY-MM-DD'), level)
+      ,'YYYY') as year
+   ,to_char(add_months(to_date('2019-01-01','YYYY-MM-DD'), level)
+      ,'MM') as month
+from dual
+connect by level <= months_between(to_date('2030-01-01','YYYY-MM-DD'),to_date('2019-01-01','YYYY-MM-DD')) 
 ;
-ALTER TABLE HOSPITALIZACJE_CSV ADD DATE_ID NUMBER
+alter table hospitalizacje_csv add date_id number
 ; 
-UPDATE HOSPITALIZACJE_CSV H SET DATE_ID = (SELECT ID FROM DIM_DATE DIM WHERE DIM.YEAR = H.ROK AND DIM.MONTH = H.MIESIAC)
+update hospitalizacje_csv h set date_id = (select id from dim_date dim where dim.year = h.rok and dim.month = h.miesiac)
 ;
 drop table dim_date
 ;
-CREATE TABLE DIM_DATE AS
-SELECT 
-   ROWNUM AS id_date
-   ,TO_NUMBER(
-      TO_CHAR(ADD_MONTHS(TO_DATE('2017-01-01','YYYY-MM-DD'), LEVEL -1)
-      ,'YYYY')) AS YEAR
-   ,TO_NUMBER(
-      TO_CHAR(ADD_MONTHS(TO_DATE('2017-01-01','YYYY-MM-DD'), LEVEL -1)
-      ,'FMMM')) AS MONTH
-FROM DUAL
-CONNECT BY LEVEL <= MONTHS_BETWEEN(TO_DATE('2030-01-01','YYYY-MM-DD'),TO_DATE('2017-01-01','YYYY-MM-DD')) 
+create table dim_date as
+select 
+   rownum as id_date
+   ,to_number(
+      to_char(add_months(to_date('2017-01-01','YYYY-MM-DD'), level -1)
+      ,'YYYY')) as year
+   ,to_number(
+      to_char(add_months(to_date('2017-01-01','YYYY-MM-DD'), level -1)
+      ,'FMMM')) as month
+from dual
+connect by level <= months_between(to_date('2030-01-01','YYYY-MM-DD'),to_date('2017-01-01','YYYY-MM-DD')) 
 ;
 
-ALTER TABLE HOSPITALIZACJE_CSV ADD DATE_ID NUMBER; 
+alter table hospitalizacje_csv add date_id number; 
 
-UPDATE HOSPITALIZACJE_CSV H SET DATE_ID = (SELECT ID FROM DIM_DATE DIM WHERE DIM.YEAR = H.ROK AND DIM.MONTH = H.MIESIAC)
+update hospitalizacje_csv h set date_id = (select id from dim_date dim where dim.year = h.rok and dim.month = h.miesiac)
 ;
-DESC HOSPITALIZATION_SOURCE;
+desc hospitalization_source;
 
-UPDATE HOSPITALIZACJE_CSV H SET DATE_ID = (SELECT ID FROM DIM_DATE DIM WHERE DIM.YEAR = H.ROK AND DIM.MONTH = H.MIESIAC)
+update hospitalizacje_csv h set date_id = (select id from dim_date dim where dim.year = h.rok and dim.month = h.miesiac)
 ;
 
-WITH 
- w_hospitalizations AS (
-   SELECT
-      rok YEAR
-      ,miesiac MONTH
+with 
+ w_hospitalizations as (
+   select
+      rok year
+      ,miesiac month
       ,ow_nfz nfz_department_code
       ,nip_podmiotu institution_nip_code
       ,kod_produktu_kontraktowego nfz_contract_code
@@ -382,66 +382,66 @@ WITH
       ,grupa_wiekowa_pacjenta age_category
       ,przedzial_dlugosci_trwania_hospitalizacji hosp_length_in_day_category
       ,liczba_hospitalizacji hospitalization_count
-   FROM dm_nfzhosp.hospitalization_source
+   from dm_nfzhosp.hospitalization_source
    ) 
-, w_nfz_dept_dict(id_nfz, region_name, nfz_abbr) AS (
-   SELECT 1 ,'Dolnośląski' , 'DŚ' UNION ALL
-   SELECT 2, 'Kujawsko-Pomorski', 'KP'  UNION ALL
-   SELECT 3, 'Lubelski', 'LB'  UNION ALL
-   SELECT 4, 'Lubuski', 'LS'  UNION ALL
-   SELECT 5, 'Łódzki', 'ŁD'  UNION ALL
-   SELECT 6, 'Małopolski', 'MP'  UNION ALL
-   SELECT 7, 'Mazowiecki', 'MZ'  UNION ALL
-   SELECT 8, 'Opolski', 'OP'  UNION ALL
-   SELECT 9, 'Podkarpacki', 'PK'  UNION ALL
-   SELECT 10, 'Podlaski', 'PL'  UNION ALL
-   SELECT 11, 'Pomorski', 'PM'  UNION ALL
-   SELECT 12, 'Śląski', 'ŚL'  UNION ALL
-   SELECT 13, 'Świętokrzyski', 'ŚK'  UNION ALL
-   SELECT 14, 'Warmińsko-Mazurski', 'WM'  UNION ALL
-   SELECT 15, 'Wielkopolski', 'WP'  UNION ALL
-   SELECT 16, 'Zachodniopomorski', 'ZP' 
+, w_nfz_dept_dict(id_nfz, region_name, nfz_abbr) as (
+   select 1 ,'Dolnośląski' , 'DŚ' union all
+   select 2, 'Kujawsko-Pomorski', 'KP'  union all
+   select 3, 'Lubelski', 'LB'  union all
+   select 4, 'Lubuski', 'LS'  union all
+   select 5, 'Łódzki', 'ŁD'  union all
+   select 6, 'Małopolski', 'MP'  union all
+   select 7, 'Mazowiecki', 'MZ'  union all
+   select 8, 'Opolski', 'OP'  union all
+   select 9, 'Podkarpacki', 'PK'  union all
+   select 10, 'Podlaski', 'PL'  union all
+   select 11, 'Pomorski', 'PM'  union all
+   select 12, 'Śląski', 'ŚL'  union all
+   select 13, 'Świętokrzyski', 'ŚK'  union all
+   select 14, 'Warmińsko-Mazurski', 'WM'  union all
+   select 15, 'Wielkopolski', 'WP'  union all
+   select 16, 'Zachodniopomorski', 'ZP' 
 )
-SELECT 
- (SELECT ID FROM DIM_DATE DIM WHERE DIM.YEAR = hosp.YEAR AND DIM.MONTH = hosp.month)  dim_id
+select 
+ (select id from dim_date dim where dim.year = hosp.year and dim.month = hosp.month)  dim_id
  ,dept_dict.nfz_abbr || ' (' || lpad(hosp.nfz_department_code,2,0) || ')' dept_name_code
  ,hosp.institution_nip_code institution_nip_code
  ,hosp.nfz_service_code nfz_service_code
  ,hosp.nfz_contract_code nfz_contract_code
- ,CASE hosp.patient_gender 
-    WHEN 'K' THEN 'F'
-    WHEN 'M' THEN 'M'
-    ELSE hosp.patient_gender 
- END as patient_gender
- ,REPLACE(hosp.age_category,'65 i wiecej','>65') age_category
- ,CASE substr(hosp.hosp_length_in_day_category,0,1)
-    WHEN '6' THEN '>6'
-    WHEN '0' THEN '0'
-    WHEN '3' THEN '3-5'
-    WHEN '1' THEN '1-2'
-   ELSE hosp.hosp_length_in_day_category
-   END AS hosp_length_in_day_category 
-FROM w_hospitalizations hosp
-   LEFT JOIN w_nfz_dept_dict dept_dict ON hosp.nfz_department_code = dept_dict.id_nfz
+ ,case hosp.patient_gender 
+    when 'K' then 'F'
+    when 'M' then 'M'
+    else hosp.patient_gender 
+ end as patient_gender
+ ,replace(hosp.age_category,'65 i wiecej','>65') age_category
+ ,case substr(hosp.hosp_length_in_day_category,0,1)
+    when '6' then '>6'
+    when '0' then '0'
+    when '3' then '3-5'
+    when '1' then '1-2'
+   else hosp.hosp_length_in_day_category
+   end as hosp_length_in_day_category 
+from w_hospitalizations hosp
+   left join w_nfz_dept_dict dept_dict on hosp.nfz_department_code = dept_dict.id_nfz
 ;
-select * from DIM_DATE;
+select * from dim_date;
 
 
-SELECT value FROM nls_database_parameters WHERE parameter = 'NLS_CHARACTERSET';
+select value from nls_database_parameters where parameter = 'NLS_CHARACTERSET';
 ;
 -- 20240528
 drop table dm_nfzhosp.dim_nfzcontract
 ;
 --CREATE TABLE dim_nfzcontract AS
-SELECT 
-   CAST(ROWNUM AS NUMBER(4)) AS id_contract
+select 
+   cast(rownum as number(4)) as id_contract
    ,code
    ,sysdate as create_dt
    ,uid
-FROM (
-   SELECT 
-      DISTINCT(VALUE) AS code
-   FROM (SELECT VALUE FROM (SELECT DISTINCT (F.nfz_contract_code) AS VALUE FROM f_hospitalizations F))
+from (
+   select 
+      distinct(value) as code
+   from (select value from (select distinct (f.nfz_contract_code) as value from f_hospitalizations f))
 )
 ;
 --total hospitalization
@@ -453,7 +453,7 @@ select to_char(
 from dm_nfzhosp.f_hospitalizations
 ;
 select all_hosp 
-from RPT_TOTALHOSP
+from rpt_totalhosp
 ;
 --cost 61550
 --WITH
@@ -483,31 +483,31 @@ from RPT_TOTALHOSP
 
 --profiling
 --  the distribution of hospitalizations across different departments
-SELECT 
+select 
    d.value,
-   count(h.DIM_DEPARTMENT_ID) as ile FROM (
+   count(h.dim_department_id) as quantity from (
    select 
-   DIM_DEPARTMENT_ID,
+   dim_department_id,
    case
-     when ile < 500000 then  '1: < 500K'
-     when ile < 1000000 then '2: 500K - 999K'
-     when ile < 1500000 then '3: 1M - 1.49M'
-     when ile < 2000000 then '4: 1.5M - 1.99M'
-     when ile < 2500000 then '5: 2M - 2.49M'
-     when ile < 3000000 then '6: 2.5M - 2.99M'
-     when ile < 3500000 then '7: 3M - 3.49M'
-     when ile < 5000000 then '8: 3.5M - 4.99M'
+     when quantity < 500000 then  '1: < 500K'
+     when quantity < 1000000 then '2: 500K - 999K'
+     when quantity < 1500000 then '3: 1M - 1.49M'
+     when quantity < 2000000 then '4: 1.5M - 1.99M'
+     when quantity < 2500000 then '5: 2M - 2.49M'
+     when quantity < 3000000 then '6: 2.5M - 2.99M'
+     when quantity < 3500000 then '7: 3M - 3.49M'
+     when quantity < 5000000 then '8: 3.5M - 4.99M'
      else '9: 5M+'
-   end as ile
+   end as quantity
    from
    (
-      select DIM_DEPARTMENT_ID, count(*) as ile
+      select dim_department_id, count(*) as quantity
       from f_hospitalizations
-      group by DIM_DEPARTMENT_ID
+      group by dim_department_id
    )
 ) h
 right join (
-   select *
+   select id, value
    from (
       values 
        (1, '1: < 500K'),
@@ -519,7 +519,7 @@ right join (
        (7, '7: 3M - 3.49M'),
        (8, '8: 3.5M - 4.99M'),
        (9, '9: 5M+') as dict (id,value)
-       ) d on h.ile = d.value
+       ) d on h.quantity = d.value
 group by d.value
 order by 1
 --connect by labels
