@@ -43,6 +43,7 @@ order by 1
 /
 ;
 /
+--version 1 by month
 create or replace view c##jdoe.prf_date_distr_histogram as
 select dd.year || '-' || lpad(dd.month,2,0) as ym, count(*) as quantity
 from dm_nfzhosp.f_hospitalizations f
@@ -50,6 +51,22 @@ from dm_nfzhosp.f_hospitalizations f
 group by dd.year, dd.month
 order by 2 desc
 ;
-
+--version 2 by half-year
+create or replace view c##jdoe.prf_distr_histogram_by_hy as
+select
+   dd.year || '-H' ||
+   case
+      when dd.month between 1 and 6 then '1'
+      else '2'
+   end as period,
+   count(f.dim_date_id) as quantity
+from dm_nfzhosp.f_hospitalizations f
+join dm_nfzhosp.dim_date dd on f.dim_date_id = dd.id_date
+group by dd.year, 
+         case
+            when dd.month between 1 and 6 then '1'
+            else '2'
+         end
+order by dd.year, period;
 
 EXIT;

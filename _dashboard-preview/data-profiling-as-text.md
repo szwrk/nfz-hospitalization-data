@@ -4,7 +4,7 @@ CONNECT c##jdoe/oracle@datamart;
 ## Reports
 **1. Distribution of hospitalizations across different departments**
 
-- _Distribution of hospitalizations across different departments?_
+- _Distribution of hospitalizations across different departments_
 
 ```sql
 SQL> SELECT value, quantity
@@ -26,36 +26,49 @@ VALUE          QUANTITY
 9: 5M+                0
 ```
 
-**2. Distribution of date**
+**2a. Distribution of hospitalizations by month**
 ```sql
 SELECT
    ym,
    quantity
 FROM C##JDOE.prf_date_distr_histogram;
-``
-
+```
 ```
 YM                                                  QUANTITY
 ------------------------------------------------- ----------
 2018-03                                               356677
 2017-03                                               356385
 2018-10                                               344234
-2017-10                                               343732
-2019-03                                               340307
-2019-10                                               339088
-2018-01                                               333154
-2019-04                                               329828
-2019-01                                               329817
-2017-11                                               329307
-2017-01                                               329066
 (...)
-2021-04                                               219797
-2021-01                                               211185
-2020-12                                               201980
-2020-05                                               197001
 2020-11                                               172620
 2020-04                                               144646
 
 72 rows selected. 
 ```
-;
+
+**2b. Distribution of hospitalizations by half-year**
+
+```sql
+SELECT
+   period,
+   quantity
+FROM C##JDOE.prf_distr_histogram_by_hy;
+```
+```
+PERIOD                                        QUANTITY
+------------------------------------------- ----------
+2017-H1                                        1974516
+2017-H2                                        1953199
+2018-H1                                        1981317
+2018-H2                                        1927280
+2019-H1                                        1954975
+2019-H2                                        1887371
+2020-H1                                        1480522
+2020-H2                                        1413063
+2021-H1                                        1441175
+2021-H2                                        1672280
+2022-H1                                        1675865
+2022-H2                                        1832786
+
+12 rows selected. 
+```
