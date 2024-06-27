@@ -614,8 +614,8 @@ group by cat
 order by cat
 ;
 select  
-quantity
-,log(10, round(quantity,-2))
+   quantity
+   ,log(10, quantity)
 from (
  select
          dim_institution_id inst
@@ -640,3 +640,32 @@ group by dd.year,
             else '2'
          end
 order by dd.year, period;
+/
+with hosp_per_inst as (
+ select
+   dim_institution_id inst
+   ,count(dim_institution_id) as quantity
+   from dm_nfzhosp.f_hospitalizations f
+   group by dim_institution_id
+   )
+select
+   case bin
+      when 0 then '1: 0-10'
+      when 1 then '2. 100'
+      when 2 then '3: 1.000'
+      when 3 then '4: 10.000'
+      when 4 then '5: 100.000'
+      when 5 then '6: 1.000.000'
+    end as up_to
+   ,count(*) as count
+from
+(
+   select  
+      inst
+      ,quantity
+      ,round(log(10, quantity)) as bin
+   from hosp_per_inst
+   )
+group by bin
+order by 1 asc
+;

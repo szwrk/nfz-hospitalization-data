@@ -72,3 +72,18 @@ PERIOD                                        QUANTITY
 
 12 rows selected. 
 ```
+**3. Distribution histogram based on the number of hospitalizations by institution field**
+```sql
+SELECT
+   up_to,
+   quantity
+FROM c##jdoe.prf_hosp_distr_histogram_by_inst;
+```
+
+
+1: 0-10	1
+2. 100	7
+3: 1.000	83
+4: 10.000	243
+5: 100.000	391
+6: 1.000.000	226
