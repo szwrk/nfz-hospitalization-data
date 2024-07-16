@@ -99,6 +99,7 @@ sqlloader_start_time=$(date +%s)
 if [ "$load_mode" == "1" ]; then
     echo "Use small demo dataset."
     sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/demo_nfz_hospitalizations_2019-2022.ctl log=log/demo_nfz_hospitalizations_2019-2022.log direct=true 
+    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/demo_jgp.ctl log=log/demo_jgp.log direct=true 
 elif [ "$load_mode" == "2" ]; then
     echo "Downloading full csv (>1GB)..."
     pwd
@@ -114,9 +115,11 @@ elif [ "$load_mode" == "2" ]; then
     mv hospitalizacje.csv nfz_hospitalizations_2022.csv
     # Load data
     cd ..
-    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log direct=true 
+    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log direct=true
+    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/jgp.ctl log=log/jgp.log direct=true
 elif [ "$load_mode" == "3" ]; then
     sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/nfz_hospitalizations_2019-2022.ctl log=log/nfz_hospitalizations_2019-2022.log direct=true
+    sqlldr ${dev_name}/${dev_pass}@${db_tns_datamart_pdb} control=ctl/jgp.ctl log=log/jgp.log direct=true
 fi
 
 sqlloader_end_time=$(date +%s)
