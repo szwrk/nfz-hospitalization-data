@@ -77,47 +77,42 @@ WITH w_nfz_dept_dict(id_department, region_name, nfz_abbr) AS (
 ;
 
 --Dimension NFZ Dictionaries - static
-CREATE TABLE dm_nfzhosp.dim_nfzdischarge(
-   id_position PRIMARY KEY
-   ,value NOT NULL) 
-NOLOGGING 
-TABLESPACE tbs_datamart 
-AS 
-WITH w_discharge_mode_dict(id_position, value) AS (
-   SELECT 1,'zakończenie procesu terapeutycznego lub diagnostycznego' UNION ALL
-   SELECT 2,'skierowanie do dalszego leczenia w lecznictwie ambulatoryjnym' UNION ALL
-   SELECT 3,'skierowanie do dalszego leczenia w innym szpitalu' UNION ALL
-   SELECT 4,'skierowanie do dalszego leczenia w innym niż szpital, zakładzie opieki stacjonarnej' UNION ALL
-   SELECT 6,'wypisanie na własne żądanie' UNION ALL
-   SELECT 7,'osoba leczona samowolnie opuściła zakład opieki stacjonarnej przed zakończeniem procesu terapeutycznego lub diagnostycznego' UNION ALL
-   SELECT 8,'wypisanie na podstawie art. 22 ust. 1 pkt 3 ustawy o zakładach opieki zdrowotnej' UNION ALL
-   SELECT 9,'zgon pacjenta' UNION ALL
-   SELECT 10 ,'osoba leczona, przyjęta w trybie oznaczonym kodem "9" lub "10", która samowolnie opuściła podmiot leczniczy' UNION ALL
-   SELECT 11 ,'wypisanie na podstawie art. 46 albo 47 ustawy z dnia 22 listopada 2013 r.'
- )
-SELECT D.id_position, D.value FROM w_discharge_mode_dict D
-;
-
-CREATE TABLE dm_nfzhosp.dim_nfzadmissions(
-   id_position PRIMARY KEY
-   ,value NOT NULL)
-NOLOGGING 
-TABLESPACE tbs_datamart 
+CREATE TABLE dm_nfzhosp.dim_nfzdischarge
+NOLOGGING
+TABLESPACE tbs_datamart
 AS
-WITH w_admission_mode_dict (id_position, value) AS (
-  SELECT 1, 'Przyjęcie planowe' UNION ALL
-  SELECT 2, 'Przyjęcie w trybie nagłym w wyniku przekazania przez zespół ratownictwa medycznego' UNION ALL
-  SELECT 3, 'Przyjęcie w trybie nagłym – inne przypadki' UNION ALL
-  SELECT 4, 'Przyjęcie w trybie nagłym bez skierowania' UNION ALL
-  SELECT 5, 'Przyjęcie noworodka w wyniku porodu w tym szpitalu' UNION ALL
-  SELECT 6, 'Przyjęcie planowe na podstawie skierowania' UNION ALL
-  SELECT 7, 'Przyjęcie planowe osoby, która skorzystała ze świadczeń opieki zdrowotnej poza kolejnością, zgodnie z uprawnieniami przysługującymi jej na podstawie ustawy' UNION ALL
-  SELECT 8, 'Przeniesienie z innego szpitala' UNION ALL
-  SELECT 9, 'Przyjęcie osoby podlegającej obowiązkowemu leczeniu' UNION ALL
-  SELECT 10, 'Przyjęcie przymusowe' UNION ALL
-  SELECT 11, 'Przyjęcie na podstawie karty diagnostyki i leczenia onkologicznego'
+WITH w_discharge_mode_dict(id_position, value, value_eng) AS (
+   SELECT 1, 'zakończenie procesu terapeutycznego lub diagnostycznego', 'termination of the therapeutic or diagnostic process' UNION ALL
+   SELECT 2, 'skierowanie do dalszego leczenia w lecznictwie ambulatoryjnym', 'referral for further treatment in outpatient care' UNION ALL
+   SELECT 3, 'skierowanie do dalszego leczenia w innym szpitalu', 'referral for further treatment in another hospital' UNION ALL
+   SELECT 4, 'skierowanie do dalszego leczenia w innym niż szpital, zakładzie opieki stacjonarnej', 'referral for further treatment in a non-hospital stationary care facility' UNION ALL
+   SELECT 6, 'wypisanie na własne żądanie', 'discharge at own request' UNION ALL
+   SELECT 7, 'osoba leczona samowolnie opuściła zakład opieki stacjonarnej przed zakończeniem procesu terapeutycznego lub diagnostycznego', 'the treated person left the stationary care facility before completing the therapeutic or diagnostic process' UNION ALL
+   SELECT 8, 'wypisanie na podstawie art. 22 ust. 1 pkt 3 ustawy o zakładach opieki zdrowotnej', 'discharge under Article 22(1)(3) of the Healthcare Institutions Act' UNION ALL
+   SELECT 9, 'zgon pacjenta', 'patient death' UNION ALL
+   SELECT 10, 'osoba leczona, przyjęta w trybie oznaczonym kodem "9" lub "10", która samowolnie opuściła podmiot leczniczy', 'treated person, admitted under code "9" or "10", who left the medical entity without permission' UNION ALL
+   SELECT 11, 'wypisanie na podstawie art. 46 albo 47 ustawy z dnia 22 listopada 2013 r.', 'discharge under Article 46 or 47 of the Act of November 22, 2013'
 )
-SELECT A.id_position, A.value FROM w_admission_mode_dict A;
+SELECT id_position, value, value_eng FROM w_discharge_mode_dict;
+
+CREATE TABLE dm_nfzhosp.dim_nfzadmissions
+NOLOGGING
+TABLESPACE tbs_datamart
+AS
+WITH w_admission_mode_dict(id_position, value, value_eng) AS (
+  SELECT 1, 'Przyjęcie planowe', 'Planned admission' UNION ALL
+  SELECT 2, 'Przyjęcie w trybie nagłym w wyniku przekazania przez zespół ratownictwa medycznego', 'Emergency admission due to transfer by the medical rescue team' UNION ALL
+  SELECT 3, 'Przyjęcie w trybie nagłym – inne przypadki', 'Emergency admission - other cases' UNION ALL
+  SELECT 4, 'Przyjęcie w trybie nagłym bez skierowania', 'Emergency admission without a referral' UNION ALL
+  SELECT 5, 'Przyjęcie noworodka w wyniku porodu w tym szpitalu', 'Admission of a newborn as a result of childbirth in this hospital' UNION ALL
+  SELECT 6, 'Przyjęcie planowe na podstawie skierowania', 'Planned admission based on a referral' UNION ALL
+  SELECT 7, 'Przyjęcie planowe osoby, która skorzystała ze świadczeń opieki zdrowotnej poza kolejnością, zgodnie z uprawnieniami przysługującymi jej na podstawie ustawy', 'Planned admission of a person who received healthcare services out of turn, according to entitlements under the act' UNION ALL
+  SELECT 8, 'Przeniesienie z innego szpitala', 'Transfer from another hospital' UNION ALL
+  SELECT 9, 'Przyjęcie osoby podlegającej obowiązkowemu leczeniu', 'Admission of a person subject to compulsory treatment' UNION ALL
+  SELECT 10, 'Przyjęcie przymusowe', 'Forced admission' UNION ALL
+  SELECT 11, 'Przyjęcie na podstawie karty diagnostyki i leczenia onkologicznego', 'Admission based on an oncology diagnostics and treatment card'
+)
+SELECT id_position, value, value_eng FROM w_admission_mode_dict;
 
 --Dimension Dates - static
 CREATE TABLE dm_nfzhosp.dim_date(
@@ -154,6 +149,12 @@ CREATE TABLE dm_nfzhosp.dim_services (
 CREATE TABLE dm_nfzhosp.dim_institutions (
     id_institution NUMBER(5) PRIMARY KEY,
     nip_code VARCHAR2(100) NOT NULL
+);
+
+CREATE TABLE dm_nfzhosp.dim_jgp (
+    group_code VARCHAR2(10) PRIMARY KEY,
+    product_code VARCHAR2(100) NOT NULL,
+    name VARCHAR2(250) NOT NULL
 );
 
 -- Materialized view for refreshing data

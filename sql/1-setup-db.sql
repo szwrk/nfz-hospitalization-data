@@ -1,7 +1,9 @@
 /* Create DB */
--- CREATE PLUGGABLE DATABASE datamart
--- FILE_NAME_CONVERT = ('/opt/oracle/oradata/FREE/', '/opt/oracle/oradata/FREE/DATAMART/
--- ALTER PLUGGABLE DATABASE datamart OPEN;
+CREATE PLUGGABLE DATABASE datamart
+ADMIN USER sysdm IDENTIFIED BY oracle
+FILE_NAME_CONVERT = ('/opt/oracle/oradata/FREE/', '/opt/oracle/oradata/FREE/DATAMART/');
+
+ALTER PLUGGABLE DATABASE datamart OPEN;
 
 -- Setup datamart root...
 ALTER SESSION SET CONTAINER = datamart;
