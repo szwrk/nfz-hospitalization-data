@@ -41,6 +41,14 @@ read -s -p 'Enter DM admin password : ' datamart_admin_pass
 echo ' '
 read -s -p 'Enter analyst password : ' analyst_pass
 
+# # Only for tests
+# load_mode="3"
+# dba_pass="oracle"
+# dev_pass="oracle"
+# datamart_admin_pass="oracle"
+# analyst_pass="oracle"
+# # End Tests
+
 # log the start time
 instalattion_start_time=$(date +%s)
 
@@ -52,7 +60,6 @@ exit
 EOF
 
 check_success
-cd ..
 echo "Drop Database Script Completed"
 echo ""
 
@@ -78,6 +85,7 @@ EOF
 echo "======================================"
 echo " Starting Data Mart Build Script"
 echo "======================================"
+pwd
 cd sql || exit 1
 sql -S ${dba_name}@${db_tns_cdb} AS SYSDBA @2-create-mart.sql <<EOF
 ${dba_pass}
