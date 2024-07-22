@@ -8,10 +8,6 @@ dev_name="c##jsmith"
 datamart_admin_name="sysdm"
 analyst_name=c##jdoe
 
-# load_mode=3
-# dba_pass="oracle"
-# dev_pass="oracle"
-# datamart_admin_pass="oracle"
 
 check_success() {
     if [ $? -ne 0 ]; then
@@ -46,6 +42,13 @@ read -s -p 'Enter DM admin password : ' datamart_admin_pass
 echo ' '
 read -s -p 'Enter analyst password : ' analyst_pass
 
+# Only for tests
+load_mode="3"
+dba_pass="oracle"
+dev_pass="oracle"
+datamart_admin_pass="oracle"
+analyst_pass="oracle"
+# End Tests
 
 # log the start time
 instalattion_start_time=$(date +%s)
