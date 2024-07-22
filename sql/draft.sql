@@ -669,3 +669,103 @@ from
 group by bin
 order by 1 asc
 ;
+--all cases
+with x as (
+select 
+   f.admission_code
+   ,f.discharge_code
+   ,count(*) as quantity
+from dm_nfzhosp.f_hospitalizations f
+group by f.admission_code, discharge_code
+)
+select
+   adm.value_eng as admission
+   ,dis.value_eng as discharge
+   ,substr(adm.value_eng,0,instr(adm.value_eng,' '))
+   ,quantity
+from x
+left join dm_nfzhosp.dim_nfzadmissions adm on x.admission_code = adm.id_position
+left join dm_nfzhosp.dim_nfzdischarge dis on x.discharge_code = dis.id_position
+order by quantity desc
+;/
+--hospitalizations_quantity_by_discharge_code - text aggregation
+with x as (
+select 
+   f.admission_code
+   ,f.discharge_code
+   ,count(1) as quantity
+from dm_nfzhosp.f_hospitalizations f
+--where -- reduce the number of returned rows
+--   f.admission_code in (2, 3) and
+--   rownum <100
+group by f.admission_code, discharge_code
+)
+      select
+         adm.id_position as admission_code
+         ,'"' || adm.id_position || '" ' || adm.value_eng as admission_basis
+         ,listagg('"' || dis.id_position || '" ' ||  x.quantity, ' h. | ' ) within group (order by x.quantity desc) as hosp_quantity_by_discharge_code
+      from x
+         join dm_nfzhosp.dim_nfzadmissions adm on x.admission_code = adm.id_position
+         join dm_nfzhosp.dim_nfzdischarge dis on x.discharge_code = dis.id_position
+      group by adm.id_position, '"' || adm.id_position || '" ' || adm.value_eng
+union all
+select null, null, null from dual
+union all
+select null, null, 'Discharge description:' from dual
+union all
+select null, null, '"' || to_char(id_position) || '" ' || value_eng from DIM_NFZDISCHARGE
+;/
+--Result
+--"2" Emergency admission due to transfer by the medical rescue team	"2" 4697712 h. | "1" 1603881 h. | "9" 1175358 h. | "3" 493851 h. | "6" 203370 h. | "4" 154932 h. | "7" 11586 h. | "8" 978 h. | "11" 903 h. | "10" 480
+--"3" Emergency admission - other cases	"2" 15455742 h. | "1" 6919800 h. | "9" 1122597 h. | "3" 1055898 h. | "6" 709275 h. | "4" 188649 h. | "7" 14814 h. | "8" 2970 h. | "11" 2382 h. | "10" 819
+--"5" Admission of a newborn as a result of childbirth in this hospital	"1" 713970 h. | "2" 191286 h. | "3" 74289 h. | "6" 20469 h. | "9" 11430 h. | "4" 1260 h. | "8" 219 h. | "11" 93 h. | "7" 72 h. | "10" 33
+--"6" Planned admission based on a referral	"2" 18046503 h. | "1" 8711580 h. | "3" 407859 h. | "6" 238764 h. | "9" 213738 h. | "4" 62466 h. | "7" 6309 h. | "11" 2988 h. | "8" 2295 h. | "10" 639
+--"7" Planned admission of a person who received healthcare services out of turn, according to entitlements under the act	"2" 13752 h. | "1" 5088 h. | "3" 1581 h. | "6" 39 h. | "9" 24 h. | "4" 18 h. | "7" 9 h. | "8" 6
+--"8" Transfer from another hospital	"2" 228732 h. | "1" 75990 h. | "3" 58662 h. | "9" 27066 h. | "6" 5925 h. | "4" 5751 h. | "7" 222 h. | "8" 66 h. | "10" 12 h. | "11" 6
+--"9" Admission of a person subject to compulsory treatment	"2" 2616 h. | "1" 681 h. | "3" 243 h. | "9" 150 h. | "4" 69 h. | "6" 21 h. | "8" 6 h. | "10" 3 h. | "7" 3
+--"10" Forced admission	"1" 1566 h. | "2" 1263 h. | "9" 99 h. | "3" 75 h. | "6" 60 h. | "4" 27 h. | "10" 3
+--"11" Admission based on an oncology diagnostics and treatment card	"2" 340449 h. | "1" 271371 h. | "9" 9750 h. | "3" 5535 h. | "6" 2766 h. | "4" 897 h. | "7" 75 h. | "11" 66 h. | "8" 30 h. | "10" 15
+--	
+--	Discharge description:
+--	"1" termination of the therapeutic or diagnostic process
+--	"2" referral for further treatment in outpatient care
+--	"3" referral for further treatment in another hospital
+--	"4" referral for further treatment in a non-hospital stationary care facility
+--	"6" discharge at own request
+--	"7" the treated person left the stationary care facility before completing the therapeutic or diagnostic process
+--	"8" discharge under Article 22(1)(3) of the Healthcare Institutions Act
+--	"9" patient death
+--	"10" treated person, admitted under code "9" or "10", who left the medical entity without permission
+--	"11" discharge under Article 46 or 47 of the Act of November 22, 2013
+
+-- Pivot version
+
+with x as (
+select 
+   f.admission_code
+   ,f.discharge_code
+   ,count(1) as quantity
+from dm_nfzhosp.f_hospitalizations f
+group by f.admission_code, discharge_code
+)
+select * 
+from (
+select
+   adm.value_eng || ' ("' || adm.id_position || '")' as admission_code
+   ,dis.id_position as discharge_code
+   ,quantity
+from x
+   join dm_nfzhosp.dim_nfzadmissions adm on x.admission_code = adm.id_position
+   join dm_nfzhosp.dim_nfzdischarge dis on x.discharge_code = dis.id_position
+)
+pivot (
+   min(quantity) 
+   for discharge_code in (1,2,3,4,6,7,8,9,10,11)
+)
+union all
+select null,null,null,null,null,null,null,null,null,null,null from dual
+union all
+select 'Discharge codes preview:',null,null,null,null,null,null,null,null,null,null from dual
+union all 
+select   adm.value_eng || ' ("' || adm.id_position || '")' as admission_code,null,null,null,null,null,null,null,null,null,null from dim_nfzadmissions adm
+;/
