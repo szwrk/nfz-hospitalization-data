@@ -99,4 +99,34 @@ from
 group by bin
 order by 1 asc
 ;
+--
+-- Distribution based on the count of specific modes of patient discharge per admission, according to the NFZ (National Health Fund) modes of discharge and admission.
+create view c##jdoe.prf_hosp_distr_admission_discharges as
+select
+    reason_for_admission,
+    "1" AS dis_1,
+    "2" AS dis_2,
+    "3" AS dis_3,
+    "4" AS dis_4,
+    "6" AS dis_6,
+    "7" AS dis_7,
+    "8" AS dis_8,
+    "9" AS dis_9,
+    "10" AS dis_10,
+    "11" AS dis_11
+from (
+   select
+      adm.value_eng || ' (' || adm.id_position  || ')' as reason_for_admission
+      ,f.admission_code
+      ,f.discharge_code
+   from dm_nfzhosp.f_hospitalizations f
+   join dm_nfzhosp.dim_nfzadmissions adm on f.admission_code = adm.id_position
+   ) 
+pivot (
+   count(*) 
+   for discharge_code in (1,2,3,4,6,7,8,9,10,11)
+)
+;
+SELECT * FROM c##jdoe.prf_hosp_distr_admission_discharges
+;
 EXIT;

@@ -62,7 +62,7 @@ select
    else unknown 
    end as hosp_length_in_day_category 
  ,hosp.discharge_code discharge_code
- ,concat(discharge.value, (, hosp.discharge_code, )) discharge_mode
+ ,concat(discharge.value, (, hosp.discharge_code, )) dis_mode
  ,hosp.admission_code admission_code
  ,concat(admission.value,  (, hosp.admission_code,)) admission_mode 
 from w_hospitalizations_2022 hosp
@@ -127,7 +127,7 @@ from v_w_hospitalizations_2022
 --check nulls
 select * 
 from v_w_hospitalizations_2022
-where discharge_mode is null or admission_mode is null
+where dis_mode is null or admission_mode is null
 ;
 /
 -- I found mooore data from years 2017-2021 so I will use it
@@ -247,7 +247,7 @@ select
    else unknown 
    end as hosp_length_in_day_category 
  ,hosp.discharge_code discharge_code
- ,concat(discharge.value, (, hosp.discharge_code, )) discharge_mode
+ ,concat(discharge.value, (, hosp.discharge_code, )) dis_mode
  ,hosp.admission_code admission_code
  ,concat(admission.value,  (, hosp.admission_code,)) admission_mode 
 from w_hospitalizations_2022 hosp
@@ -738,8 +738,7 @@ select null, null, '"' || to_char(id_position) || '" ' || value_eng from DIM_NFZ
 --	"10" treated person, admitted under code "9" or "10", who left the medical entity without permission
 --	"11" discharge under Article 46 or 47 of the Act of November 22, 2013
 
--- Pivot version
-
+-- Pivot version with WITH clause
 with x as (
 select 
    f.admission_code
@@ -765,7 +764,51 @@ pivot (
 union all
 select null,null,null,null,null,null,null,null,null,null,null from dual
 union all
-select 'Discharge codes preview:',null,null,null,null,null,null,null,null,null,null from dual
+select 'Discharge codes:',null,null,null,null,null,null,null,null,null,null from dual
 union all 
-select   adm.value_eng || ' ("' || adm.id_position || '")' as admission_code,null,null,null,null,null,null,null,null,null,null from dim_nfzadmissions adm
+select   dis.value_eng || ' ("' || dis.id_position || '")' as discharges_codes,null,null,null,null,null,null,null,null,null,null from dim_nfzdischarge dis
+;
+--version 2
+select * from (
+Select
+   adm.value_eng || ' ("' || adm.id_position || '")' as admission
+   ,f.admission_code
+   ,f.discharge_code
+   ,count(*) as quantity
+from dm_nfzhosp.f_hospitalizations f
+   left join dm_nfzhosp.dim_nfzadmissions adm on f.admission_code = adm.id_position
+   left join dm_nfzhosp.dim_nfzdischarge dis on f.discharge_code = dis.id_position
+group by f.admission_code, f.discharge_code,  adm.value_eng, adm.id_position
+)
+pivot (
+   min(quantity) 
+   for dic_code in (1,2,3,4,6,7,8,9,10,11)
+)
 ;/
+--version 3 KISS
+--base query
+select
+    reason_for_admission,
+    "1" AS dis_1,
+    "2" AS dis_2,
+    "3" AS dis_3,
+    "4" AS dis_4,
+    "6" AS dis_6,
+    "7" AS dis_7,
+    "8" AS dis_8,
+    "9" AS dis_9,
+    "10" AS dis_10,
+    "11" AS dis_11
+from (
+   select
+      adm.value_eng || ' (' || adm.id_position  || ')' as reason_for_admission
+      ,f.admission_code
+      ,f.discharge_code
+   from dm_nfzhosp.f_hospitalizations f
+   join dm_nfzhosp.dim_nfzadmissions adm on f.admission_code = adm.id_position
+   ) 
+pivot (
+   count(*) 
+   for discharge_code in (1,2,3,4,6,7,8,9,10,11)
+)
+;

@@ -87,3 +87,26 @@ FROM c##jdoe.prf_hosp_distr_histogram_by_inst;
 4: 10.000	243
 5: 100.000	391
 6: 1.000.000	226
+
+
+**4. Distribution histogram based on the count of specific modes of patient discharge per admission, according to the NFZ (National Health Fund) modes of discharge and admission.**
+
+
+```sql
+SELECT * 
+FROM c##jdoe.prf_hosp_distr_histogram_admission
+;
+```
+### Distribution of Patient Discharges per Admission Reason
+
+| REASON_FOR_ADMISSION                                              | DIS_1 | DIS_2 | DIS_3 | DIS_4 | DIS_6 | DIS_7 | DIS_8 | DIS_9 | DIS_10 | DIS_11 |
+|-------------------------------------------------------------------|-------------|-------------|-------------|-------------|-------------|-------------|-------------|-------------|--------------|--------------|
+| Emergency admission - other cases (3)                             | 6919800     | 15455742    | 1055898     | 188649      | 709275      | 14814       | 2970        | 1122597     | 819          | 2382         |
+| Planned admission based on a referral (6)                         | 8711580     | 18046503    | 407859      | 62466       | 238764      | 6309        | 2295        | 213738      | 639          | 2988         |
+| Emergency admission due to transfer by the medical rescue team (2)| 1603881     | 4697712     | 493851      | 154932      | 203370      | 11586       | 978         | 1175358     | 480          | 903          |
+| Admission of a newborn as a result of childbirth in this hospital (5)| 713970   | 191286      | 74289       | 1260        | 20469       | 72          | 219         | 11430       | 33           | 93           |
+| Admission based on an oncology diagnostics and treatment card (11)| 271371      | 340449      | 5535        | 897         | 2766        | 75          | 30          | 9750        | 15           | 66           |
+| Transfer from another hospital (8)                                | 75990       | 228732      | 58662       | 5751        | 5925        | 222         | 66          | 27066       | 12           | 6            |
+| Forced admission (10)                                             | 1566        | 1263        | 75          | 27          | 60          | 0           | 0           | 99          | 3            | 0            |
+| Planned admission of a person who received healthcare services out of turn, according to entitlements under the act (7)| 5088 | 13752 | 1581  | 18  | 39  | 9  | 6  | 24  | 0  | 0   |
+| Admission of a person subject to compulsory treatment (9)         | 681         | 2616        | 243         | 69          | 21          | 3           | 6           | 150         | 3            | 0            |
