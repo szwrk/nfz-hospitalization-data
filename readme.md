@@ -90,7 +90,7 @@ My objective is to prepare and process this data for visualization purposes, inc
 | **Data Cleaning**       |                                       |
 | Oracle SQL             | Data cleaning and manipulation        |
 | **Virtual Machines**    |                                       |
-| VM 1                    | Oracle Linux with DB 21               |
+| VM 1                    | Oracle Linux with DB 21 Express Edition (XE)   |
 | VM 2                    | Centos, Docker, Apache Superset container with cx_oracle connector |
 | **Shell Scripting**     |                                       |
 | MINGW Bash              | Shell scripting                       |
