@@ -11,12 +11,10 @@
 **Projects status:** *in progress*
 
 ---
-
-
 ## Sneak Peek
 Let's start with a quick preview to grab your attention. I've prepared comprehensive cross-sectional descriptions and installers (shell & SQL scripts) for various versions of my reports. Of course, you don't have to go through the installation process. For more details, simply scroll down. 
 
-Here are two dashboard options that showcase the results of my process:
+1. **Here are two dashboard options that showcase the results of my process:**
 
 - [**BI Dashboard** - Modern Approach _(show more screenshots)_](_dashboard-preview/dashboard-superset.md) 
  ![**BI Dashboard**](_dashboard-preview/assets/as-dashboard.png)
@@ -32,9 +30,23 @@ ___________________________________
 21,194,349
 ```
 
-*Example 2: SQlCl: Show Report View as Text Output*
+_Example 2: SQlCl: Show Report View as Text Output_
 
-and more...
+---
+2. [**Data exploration & profiling** _(show more results)_](_dashboard-preview/data-profiling-as-text.md) 
+
+- **Sample: Distribution based on the count of specific modes of patient discharge per admission, according to the NFZ (National Health Fund) modes of discharge and admission**
+
+| REASON_FOR_ADMISSION                                              | DIS_1 | DIS_2 | DIS_3 | DIS_4 | DIS_6 | DIS_7 | DIS_8 | DIS_9 | DIS_10 | DIS_11 |
+|-------------------------------------------------------------------|-------------|-------------|-------------|-------------|-------------|-------------|-------------|-------------|--------------|--------------|
+| Emergency admission - other cases (3)                             | 6919800     | 15455742    | 1055898     | 188649      | 709275      | 14814       | 2970        | 1122597     | 819          | 2382         |
+| Planned admission based on a referral (6)                         | 8711580     | 18046503    | 407859      | 62466       | 238764      | 6309        | 2295        | 213738      | 639          | 2988         |
+| Emergency admission due to transfer by the medical rescue team (2)| 1603881     | 4697712     | 493851      | 154932      | 203370      | 11586       | 978         | 1175358     | 480          | 903          |
+| Admission of a newborn as a result of childbirth in this hospital (5)| 713970   | 191286      | 74289       | 1260        | 20469       | 72          | 219         | 11430       | 33           | 93           |
+| Admission based on an oncology diagnostics and treatment card (11)| 271371      | 340449      | 5535        | 897         | 2766        | 75          | 30          | 9750        | 15           
+|     _(...)_  |          |         |           |           |         |         |
+
+*and more...*
 
 ---
 ## Introduction
@@ -130,9 +142,16 @@ I've prepared some bash and SQL scripts to create database, structures and objec
 ## Dashboard & Reports Results
 Of course you don't have to go through the installation process. Simply open the text-based dashboard or view the visualization screenshots. However, if you're a professional user, you can review my analysis queries (along with all other scripts) by navigating to the sql/ GitHub directory.
 
+**Data profiling**
+- [View the data profiling](_dashboard-preview/data-profiling-as-text.md)
+- [Review my data profiling script in sql/5-data-profiling.sql](sql/5-data-profiling.sql)
+
+**Analysis**
 - [View the text-based dashboard](_dashboard-preview/dashboard-as-text.md)
-- [View the Apache Superset dashboard](_dashboard-preview/dashboard-superset.md)
-- [Review my data profiling in sql/5-data-profiling.sql](sql/5-data-profiling.sql)
-- [Review my queries in sql/6-create-reports-as-analyst.sql](sql/5-create-reports-as-analyst.sql)
+- [View the BI Apache Superset dashboard](_dashboard-preview/dashboard-superset.md)
+- [Review my queries sql/6-create-reports-as-analyst.sql](sql/5-create-reports-as-analyst.sql)
+
+
+
 
 ---
