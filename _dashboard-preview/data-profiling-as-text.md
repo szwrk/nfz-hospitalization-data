@@ -97,7 +97,7 @@ SELECT *
 FROM c##jdoe.prf_hosp_distr_histogram_admission
 ;
 ```
-### Distribution of Patient Discharges per Admission Reason
+### Distribution of Patient Discharges and Admission Reason
 
 | REASON_FOR_ADMISSION                                              | DIS_1 | DIS_2 | DIS_3 | DIS_4 | DIS_6 | DIS_7 | DIS_8 | DIS_9 | DIS_10 | DIS_11 |
 |-------------------------------------------------------------------|-------------|-------------|-------------|-------------|-------------|-------------|-------------|-------------|--------------|--------------|
