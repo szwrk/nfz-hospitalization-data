@@ -114,6 +114,12 @@ WITH w_admission_mode_dict(id_position, value, value_eng) AS (
 )
 SELECT id_position, value, value_eng FROM w_admission_mode_dict;
 
+ALTER TABLE dm_nfzhosp.dim_nfzdischarge
+ADD CONSTRAINT pk_dim_nfzdischarge PRIMARY KEY (id_position);
+
+ALTER TABLE dm_nfzhosp.dim_nfzadmissions
+ADD CONSTRAINT pk_dim_nfzadmissions PRIMARY KEY (id_position);
+
 --Dimension Dates - static
 CREATE TABLE dm_nfzhosp.dim_date(
    id_date PRIMARY KEY
