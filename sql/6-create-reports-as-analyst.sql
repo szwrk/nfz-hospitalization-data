@@ -1,5 +1,3 @@
-CONNECT c##jdoe/ORACLE@datamart;
-
 -- Total Hospitalizations Report
 CREATE OR REPLACE VIEW c##jdoe.rpt_totalhosp AS
    SELECT
@@ -99,7 +97,7 @@ SELECT
    COUNT(1) month_count
 FROM
         f_hospitalizations f
-   JOIN dim_date dd ON f.dim_date_id = dd.id_date
+   JOIN dm_nfzhosp.dim_date dd ON f.dim_date_id = dd.id_date
 --WHERE
 --   dd.year = 2022
 GROUP BY
