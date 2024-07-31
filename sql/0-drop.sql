@@ -1,37 +1,38 @@
 -- CONNECT sys/oracle@192.168.0.51:1521/free AS SYSDBA;
-ALTER SESSION SET CONTAINER = CDB$ROOT;
-/* Drop objects */
+ALTER SESSION SET CONTAINER = cdb$root;
 
-drop user c##jsmith cascade;
-drop user c##jdoe cascade;
+/* Drop objects */
+DROP USER c##jsmith CASCADE;
+DROP USER c##jdoe CASCADE;
 
 ALTER SESSION SET CONTAINER = datamart;
 
--- drop materialized view dm_nfzhosp.mv_hospitalizations;
--- drop table dm_nfzhosp.hospitalizacje_csv;
--- drop table dm_nfzhosp.nfz_dicts;
+ -- DROP MATERIALIZED VIEW dm_nfzhosp.mv_hospitalizations;
+ -- DROP TABLE dm_nfzhosp.hospitalizacje_csv;
+ -- DROP TABLE dm_nfzhosp.nfz_dicts;
 
--- drop table dm_nfzhosp.dim_contracts;
--- drop table dm_nfzhosp.dim_services;
--- drop table dm_nfzhosp.dim_departments;
+ -- DROP TABLE dm_nfzhosp.dim_contracts;
+ -- DROP TABLE dm_nfzhosp.dim_services;
+ -- DROP TABLE dm_nfzhosp.dim_departments;
 
--- drop view dm_nfzhosp.trnsltd_hospitalizations;
--- drop synonym dm_nfzhosp.hospitalizations_source;
+ -- DROP VIEW dm_nfzhosp.trnsltd_hospitalizations;
+ -- DROP SYNONYM dm_nfzhosp.hospitalizations_source;
 
-drop user dm_nfzhosp cascade;
-drop user sysdm;
+DROP USER dm_nfzhosp CASCADE;
+DROP USER sysdm;
 
-drop role dm_engineer;
-drop role dm_analyst;
+DROP ROLE dm_engineer;
+DROP ROLE dm_analyst;
 
-drop tablespace tbs_datamart including contents and datafiles;
-drop tablespace tbs_datamart_idx including contents and datafiles;
-drop tablespace tbs_devdata including contents and datafiles;
+DROP TABLESPACE tbs_datamart INCLUDING CONTENTS AND DATAFILES;
+DROP TABLESPACE tbs_datamart_idx INCLUDING CONTENTS AND DATAFILES;
+DROP TABLESPACE tbs_devdata INCLUDING CONTENTS AND DATAFILES;
 
 /* Drop DB */
--- CONNECT sys/oracle@192.168.0.51:1521/free AS SYSDBA;
--- ALTER SESSION SET CONTAINER = CDB$ROOT;
--- ALTER PLUGGABLE DATABASE DATAMART CLOSE;
--- DROP PLUGGABLE DATABASE datamart INCLUDING DATAFILES;
+ALTER SESSION SET CONTAINER = cdb$root;
+ALTER PLUGGABLE DATABASE pdb$seed OPEN READ ONLY;
 
-exit;
+ALTER PLUGGABLE DATABASE datamart CLOSE;
+DROP PLUGGABLE DATABASE datamart INCLUDING DATAFILES;
+
+EXIT;
