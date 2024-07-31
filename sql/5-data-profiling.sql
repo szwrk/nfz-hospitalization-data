@@ -1,6 +1,3 @@
-CONNECT c##jdoe/ORACLE@datamart;
-
-/
 create or replace view c##jdoe.prf_hosp_distr_per_dept_histogram as select 
    d.value,
    count(h.dim_department_id) as quantity from (
