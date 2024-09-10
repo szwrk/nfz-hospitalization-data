@@ -37,14 +37,20 @@ _Example 2: SQlCl: Show Report View as Text Output_
 
 - **Sample: Distribution based on the count of specific modes of patient discharge per admission, according to the NFZ (National Health Fund) modes of discharge and admission**
 
-| REASON_FOR_ADMISSION                                              | DIS_1 | DIS_2 | DIS_3 | DIS_4 | DIS_6 | DIS_7 | DIS_8 | DIS_9 | DIS_10 | DIS_11 |
-|-------------------------------------------------------------------|-------------|-------------|-------------|-------------|-------------|-------------|-------------|-------------|--------------|--------------|
-| Emergency admission - other cases (3)                             | 6919800     | 15455742    | 1055898     | 188649      | 709275      | 14814       | 2970        | 1122597     | 819          | 2382         |
-| Planned admission based on a referral (6)                         | 8711580     | 18046503    | 407859      | 62466       | 238764      | 6309        | 2295        | 213738      | 639          | 2988         |
-| Emergency admission due to transfer by the medical rescue team (2)| 1603881     | 4697712     | 493851      | 154932      | 203370      | 11586       | 978         | 1175358     | 480          | 903          |
-| Admission of a newborn as a result of childbirth in this hospital (5)| 713970   | 191286      | 74289       | 1260        | 20469       | 72          | 219         | 11430       | 33           | 93           |
-| Admission based on an oncology diagnostics and treatment card (11)| 271371      | 340449      | 5535        | 897         | 2766        | 75          | 30          | 9750        | 15           
-|     _(...)_  |          |         |           |           |         |         |
+| Reason for Admission                                                                                | dis_1   | dis_2   | dis_3   | dis_4   | dis_6   | dis_7 | dis_8 | dis_9   | dis_10 | dis_11 | total_adm |
+|-----------------------------------------------------------------------------------------------------|---------|---------|---------|---------|---------|-------|-------|---------|--------|--------|-----------|
+| Planned admission (1)                                                                               | 0       | 0       | 0       | 0       | 0       | 0     | 0     | 0       | 0      | 0      | 0         |
+| Emergency admission due to transfer by the medical rescue team (2)                                  | 534627  | 1565904 | 164617  | 51644   | 67790   | 3862  | 326   | 391786  | 160    | 301    | 2781017   |
+| Emergency admission - other cases (3)                                                               | 2306600 | 5151914 | 351966  | 62883   | 236425  | 4938  | 990   | 374199  | 273    | 794    | 8490982   |
+| Emergency admission without a referral (4)                                                          | 0       | 0       | 0       | 0       | 0       | 0     | 0     | 0       | 0      | 0      | 0         |
+| Admission of a newborn as a result of childbirth in this hospital (5)                               | 237990  | 63762   | 24763   | 420     | 6823    | 24    | 73    | 3810    | 11     | 31     | 337707    |
+| Planned admission based on a referral (6)                                                           | 2903860 | 6015501 | 135953  | 20822   | 79588   | 2103  | 765   | 71246   | 213    | 996    | 9231047   |
+| Planned admission of a person who received healthcare services out of turn, according to entitlements under the act (7) | 1696    | 4584    | 527     | 6       | 13      | 3     | 2     | 8       | 0      | 0      | 6839      |
+| Transfer from another hospital (8)                                                                  | 25330   | 76244   | 19554   | 1917    | 1975    | 74    | 22    | 9022    | 4      | 2      | 134144    |
+| Admission of a person subject to compulsory treatment (9)                                           | 227     | 872     | 81      | 23      | 7       | 1     | 2     | 50      | 1      | 0      | 1264      |
+| Forced admission (10)                                                                               | 522     | 421     | 25      | 9       | 20      | 0     | 0     | 33      | 1      | 0      | 1031      |
+| Admission based on an oncology diagnostics and treatment card (11)                                  | 90457   | 113483  | 1845    | 299     | 922     | 25    | 10    | 3250    | 5      | 22     | 210318    |
+| Discharges sum:                                                                                     | 6101309 | 12992685| 699331  | 138023  | 393563  | 11030 | 2190  | 853404  | 668    | 2146   | **21194349**  |
 
 *and more...*
 
@@ -122,7 +128,7 @@ The data contains some foreign keys pointing to static dictionaries:
 ## My DWH DB model
 I had to transform the source file into a star schema model for that data mart...
 
-![Diagram](assets/diagram/diagram.png)
+![Diagram](assets/diagram.png)
 *Figure 1: DWH Model*
 
 ### Database Objects & Names Explanation
@@ -143,7 +149,7 @@ I've prepared some bash and SQL scripts to create database, structures and objec
 Of course you don't have to go through the installation process. Simply open the text-based dashboard or view the visualization screenshots. However, if you're a professional user, you can review my analysis queries (along with all other scripts) by navigating to the sql/ GitHub directory.
 
 **Data profiling**
-- [View the data profiling](_dashboard-preview/data-profiling-as-text.md)
+- [View the data profiling](docs.md)
 - [Review my data profiling script in sql/5-data-profiling.sql](sql/5-data-profiling.sql)
 
 **Analysis**

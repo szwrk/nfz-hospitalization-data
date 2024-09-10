@@ -787,7 +787,10 @@ pivot (
 ;/
 --version 3 KISS
 --base query
-select
+--as sysdm
+/
+--CREATE TABLE dm_nfzhosp.prf_hosp_distr_adm_disch_snap_to2022 AS 
+SELECT
     reason_for_admission,
     "1" AS dis_1,
     "2" AS dis_2,
@@ -799,16 +802,191 @@ select
     "9" AS dis_9,
     "10" AS dis_10,
     "11" AS dis_11
-from (
-   select
-      adm.value_eng || ' (' || adm.id_position  || ')' as reason_for_admission
-      ,f.admission_code
-      ,f.discharge_code
-   from dm_nfzhosp.f_hospitalizations f
-   join dm_nfzhosp.dim_nfzadmissions adm on f.admission_code = adm.id_position
+FROM (
+   SELECT
+      adm.value_eng || ' (' || adm.id_position  || ')' AS reason_for_admission
+      ,F.admission_code
+      ,F.discharge_code
+   FROM dm_nfzhosp.f_hospitalizations F
+      LEFT JOIN dm_nfzhosp.dim_nfzadmissions adm ON F.admission_code = adm.id_position
+      JOIN dm_nfzhosp.dim_date ddt ON F.dim_date_id = ddt.id_date
+   WHERE ddt.year = 2022
+      and adm.id_position = 1
    ) 
-pivot (
-   count(*) 
-   for discharge_code in (1,2,3,4,6,7,8,9,10,11)
+PIVOT (
+   COUNT(*) 
+   FOR discharge_code IN (1,2,3,4,6,7,8,9,10,11)
 )
 ;
+--goal: grant user 
+--as sysdm, direct priv
+grant create table to c##jdoe; 
+--grant select on dm_nfzhosp.prf_hosp_distr_adm_disch_snap_to2022 to c##jdoe;
+
+--goal: test cache results
+--as jdoe
+--/*+ RESULT_CACHE */
+
+--goal: validate snapshot view 
+select * from c##jdoe.prf_hosp_distr_adm_disch_snap_to2022
+;
+select * FROM dm_nfzhosp.dim_nfzadmissions adm
+;
+--goal:
+--switch driving table for clarity and readability, all admissions are included, and hospitalizations are optional or nullable
+--too long execution time in test, limit query
+WITH f AS ( 
+   SELECT * FROM dm_nfzhosp.f_hospitalizations f
+   FETCH FIRST 1000 ROWS ONLY
+   )
+SELECT
+    reason_for_admission,
+    "1" AS dis_1,
+    "2" AS dis_2,
+    "3" AS dis_3,
+    "4" AS dis_4,
+    "6" AS dis_6,
+    "7" AS dis_7,
+    "8" AS dis_8,
+    "9" AS dis_9,
+    "10" AS dis_10,
+    "11" AS dis_11
+FROM (
+   SELECT
+      adm.value_eng || ' (' || adm.id_position  || ')' AS reason_for_admission
+      ,F.admission_code
+      ,F.discharge_code
+ FROM dm_nfzhosp.dim_nfzadmissions adm
+      LEFT JOIN f F ON adm.id_position =  F.admission_code
+      LEFT JOIN dm_nfzhosp.dim_date ddt ON F.dim_date_id = ddt.id_date AND ddt.year <= 2022
+--   WHERE
+-- ddt.year <=200
+--      and 
+--      adm.id_position = 1
+   ) 
+PIVOT (
+   COUNT(*) 
+   FOR discharge_code IN (1,2,3,4,6,7,8,9,10,11)
+)
+;
+-- conculsions: 
+-- Use CTE with limit for large datasets
+-- Q: inner join vs left join for join dim_date? left join, A: because for some admissions hospitalizations is null (for example no data with code number 1, so no hosp. results, so it reduce number of records...
+-- Q: filter years A: use condition in join clause, not in where clause because it filter whole dataset after joining, while condition in JOIN clause just make empty, null rows in joining 
+
+-- goals: 
+--add order by
+CREATE TABLE c##jdoe.prf_hosp_distr_adm_disch_snap_to2022 as
+SELECT
+    adm_code,
+    reason_for_admission,
+    "1" AS dis_1,
+    "2" AS dis_2,
+    "3" AS dis_3,
+    "4" AS dis_4,
+    "6" AS dis_6,
+    "7" AS dis_7,
+    "8" AS dis_8,
+    "9" AS dis_9,
+    "10" AS dis_10,
+    "11" AS dis_11,
+       "1" +
+       "2" +
+       "3" +
+       "4" +
+       "6" +
+       "7" +
+       "8" +
+       "9" +
+       "10" +
+       "11"
+    as total_adm
+FROM (
+   SELECT
+      adm.id_position as adm_code
+      ,adm.value_eng || ' (' || adm.id_position  || ')' AS reason_for_admission
+      ,F.admission_code
+      ,F.discharge_code
+ FROM dm_nfzhosp.dim_nfzadmissions adm
+    LEFT JOIN dm_nfzhosp.f_hospitalizations F ON adm.id_position =  F.admission_code
+    LEFT JOIN dm_nfzhosp.dim_date ddt ON F.dim_date_id = ddt.id_date AND ddt.year <= 2022 AND ddt.year >=2017
+   ) 
+PIVOT (
+   COUNT(*) 
+   FOR discharge_code IN (1,2,3,4,6,7,8,9,10,11)
+)
+;
+--goal: add total per admission and sum of each discharge column
+--version 1 - union all
+select
+*
+from c##jdoe.prf_hosp_distr_adm_disch_snap_to2022
+group by (
+   reason_for_admission,
+   dis_1,
+   dis_2,
+   dis_3,
+   dis_4,
+   dis_6,
+   dis_7,
+   dis_8,
+   dis_9,
+   dis_10,
+   dis_11,
+   TOTAL_ADM)
+union all
+select 
+'sum:',
+  sum(dis_1),
+  sum(dis_2),
+  sum(dis_3),
+  sum(dis_4),
+  sum(dis_6),
+  sum(dis_7),
+  sum(dis_8),
+  sum(dis_9),
+  sum(dis_10),
+  sum(dis_11),
+  sum(TOTAL_ADM)
+from c##jdoe.prf_hosp_distr_adm_disch_snap_to2022
+;
+-- rollup
+SELECT 
+   reason_for_admission,
+    dis_1,
+    dis_2,
+    dis_3,
+    dis_4,
+    dis_6,
+    dis_7,
+    dis_8,
+    dis_9,
+    dis_10,
+    dis_11,
+    TOTAL_ADM
+FROM (
+SELECT
+    MAX(NVL(adm_code, 99)) AS adm_code,
+    NVL(reason_for_admission, 'Discharges sum:') AS reason_for_admission,
+    SUM(dis_1) AS dis_1,
+    SUM(dis_2) AS dis_2,
+    SUM(dis_3) AS dis_3,
+    SUM(dis_4) AS dis_4,
+    SUM(dis_6) AS dis_6,
+    SUM(dis_7) AS dis_7,
+    SUM(dis_8) AS dis_8,
+    SUM(dis_9) AS dis_9,
+    SUM(dis_10) AS dis_10,
+    SUM(dis_11) AS dis_11,
+    SUM(TOTAL_ADM) AS TOTAL_ADM
+FROM
+    c##jdoe.prf_hosp_distr_adm_disch_snap_to2022
+GROUP BY
+    ROLLUP(reason_for_admission)
+ORDER BY
+    CASE WHEN reason_for_admission IS NULL THEN 1 ELSE 0 END,
+    adm_code,
+    reason_for_admission
+)    
+;
+    
