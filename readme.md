@@ -1,3 +1,9 @@
+⚠️ This is the **legacy** version of the NFZ data pipeline project.
+
+For the new version using Airflow, dbt, Python, Docker and modern analytics stack, see:
+👉 [nfz-hospitalization-modern-data-stack](https://github.com/szwrk/nfz-hosp-mds)
+
+---
 
 # Analyzing 21,194,349 Hospitalization Records from Poland's National Health Fund (NFZ)
 **Comprehensive ETL, Data Warehousing, Processing & Visualization Project**
